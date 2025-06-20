@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORACLE X AI ADMIN PANEL</title>
+    <!-- Tailwind CSS CDN for utility-first styling -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Font Awesome for premium icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts - Inter for a modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Firebase SDKs for app and database functionality -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+    <style>
+        /* General Styles for premium feel (Pink & White Theme) */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Very light gray/off-white background */
+            color: #1a202c; /* Dark text for contrast */
+        }
+
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0; /* Lighter track */
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0; /* Gray thumb */
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0; /* Darker gray on hover */
+        }
+
+        /* Custom modal styles for a sleek popup */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.5); /* Semi-transparent overlay */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            backdrop-filter: blur(5px); /* Blurry background */
+        }
+        .modal-content {
+            background-color: #ffffff; /* White background for modal */
+            margin: auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            border: 1px solid #e2e8f0;
+        }
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #a0aec0; /* Lighter gray for close button */
+            transition: color 0.2s ease-in-out;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #333; /* Darker on hover */
+            text-decoration: none;
+        }
+
+        /* Key Box Styling - Modern Cards */
+        .key-box {
+            background-color: #ffffff; /* White card background */
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .key-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .key-box .flex-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .key-box button {
+            transition: transform 0.1s ease-in-out;
+        }
+        .key-box button:active {
+            transform: scale(0.95);
+        }
+        .key-box .expired {
+            color: #ef4444; /* red-500 */
+            font-weight: 600;
+        }
+        .key-box .valid {
+            color: #22c55e; /* green-500 */
+            font-weight: 600;
+        }
+        .key-box .status-active {
+            color: #22c55e; /* green-500 */
+            font-weight: 600;
+        }
+        .key-box .status-inactive {
+            color: #ef4444; /* red-500 */
+            font-weight: 600;
+        }
+        .key-box .device-bound {
+            color: #3b82f6; /* blue-500 */
+            font-weight: 600;
+        }
+        .key-box .device-unbound {
+            color: #6b7280; /* gray-500 */
+            font-weight: normal;
+        }
+
+        /* Sidebar Styles - Sleek and functional */
+        .sidebar {
+            width: 280px; /* Wider sidebar for better content display */
+            background-color: #ffffff; /* White background */
+            color: #4a5568; /* Dark gray text */
+            padding: 2rem 1.5rem;
+            box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            height: 100%;
+            overflow-y: auto;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+            z-index: 999;
+            border-right: 1px solid #e2e8f0;
+        }
+        .sidebar.active { /* This class means compact on desktop, open on mobile */
+            transform: translateX(0);
+        }
+
+        @media (min-width: 769px) { /* Desktop styles */
+            .sidebar.active {
+                width: 80px; /* Compacted width */
+            }
+        }
+        @media (max-width: 768px) { /* Mobile styles */
+            .sidebar.active {
+                width: 100%; /* Full width when active (open) on mobile */
+            }
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.2rem;
+            margin-bottom: 0.6rem;
+            border-radius: 8px;
+            transition: background-color 0.2s, color 0.2s;
+            color: #4a5568; /* Dark gray */
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background-color: #fce7f6; /* Pink-100 */
+            color: #db2777; /* Pink-600 */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .sidebar a .fas {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            color: #a0aec0; /* Default icon color */
+            transition: color 0.2s;
+        }
+        .sidebar a:hover .fas, .sidebar a.active .fas {
+            color: #db2777; /* Pink-600 for active/hover icons */
+        }
+
+        /* Hide text only when sidebar is compact (on desktop) */
+        @media (min-width: 769px) {
+            .sidebar.active a span {
+                display: none;
+            }
+            .sidebar.active a .fas { /* Center icon when text is hidden */
+                margin-right: 0;
+                justify-content: center;
+                width: 100%;
+            }
+        }
+        /* Ensure text is always visible on mobile when sidebar is open */
+        @media (max-width: 768px) {
+            .sidebar.active a span {
+                display: inline-block; /* Ensure it's shown */
+            }
+            .sidebar.active a .fas { /* Re-add margin for icon on mobile when active (open) */
+                margin-right: 1rem;
+                justify-content: flex-start; /* Align left */
+            }
+        }
+
+
+        /* Main Content Area - Expands with sidebar toggle */
+        .main-content {
+            flex-grow: 1;
+            padding: 2.5rem;
+            background-color: #f8fafc; /* Very light gray */
+            margin-left: 0;
+            transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
+            width: 100%;
+        }
+        body.sidebar-open .main-content {
+            margin-left: 280px; /* Adjust for full sidebar width */
+            width: calc(100% - 280px);
+        }
+        body.sidebar-open.sidebar-compact .main-content {
+            margin-left: 80px; /* Adjust for compact sidebar width */
+            width: calc(100% - 80px);
+        }
+
+        /* Sidebar Toggle Button - Premium Look */
+        .sidebar-toggle {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            z-index: 1001;
+            background-color: #ec4899; /* Pink-500 */
+            color: white;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(236, 72, 153, 0.3);
+            transition: left 0.3s ease-in-out, background-color 0.2s ease-in-out;
+        }
+        .sidebar-toggle:hover {
+            background-color: #db2777; /* Pink-600 */
+        }
+        body.sidebar-open .sidebar-toggle {
+            left: 305px; /* Move button to the right of full sidebar */
+        }
+        body.sidebar-open.sidebar-compact .sidebar-toggle {
+            left: 105px; /* Move button to the right of compact sidebar */
+        }
+
+        /* Card components */
+        .card {
+            background-color: #ffffff; /* White card background */
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+        .card-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a202c; /* Dark text */
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #edf2f7; /* Light gray border */
+        }
+        .card-title .icon {
+            margin-right: 1rem;
+            color: #ec4899; /* Pink-500 for titles */
+            font-size: 1.6rem;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.8rem 1.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: background-color 0.2s, transform 0.1s ease-in-out, box-shadow 0.2s;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .btn-primary {
+            background-color: #ec4899; /* Pink-500 */
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(236, 72, 153, 0.2);
+        }
+        .btn-primary:hover {
+            background-color: #db2777; /* Pink-600 */
+            box-shadow: 0 6px 15px rgba(236, 72, 153, 0.3);
+        }
+        .btn-danger {
+            background-color: #ef4444; /* red-500 */
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+        }
+        .btn-danger:hover {
+            background-color: #dc2626; /* red-600 */
+            box-shadow: 0 6px 15px rgba(239, 68, 68, 0.3);
+        }
+        .btn-warning {
+            background-color: #fbbf24; /* yellow-400 */
+            color: #1a202c; /* Dark text on yellow */
+            box-shadow: 0 4px 10px rgba(251, 191, 36, 0.2);
+        }
+        .btn-warning:hover {
+            background-color: #f59e0b; /* yellow-500 */
+            box-shadow: 0 6px 15px rgba(251, 191, 36, 0.3);
+        }
+        .btn-success {
+            background-color: #22c55e; /* green-500 */
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2);
+        }
+        .btn-success:hover {
+            background-color: #16a34a; /* green-600 */
+            box-shadow: 0 6px 15px rgba(34, 197, 94, 0.3);
+        }
+        .btn-ghost {
+            background-color: transparent;
+            color: #ec4899; /* Pink-500 */
+            border: 1px solid #ec4899;
+        }
+        .btn-ghost:hover {
+            background-color: #ec4899;
+            color: #ffffff;
+        }
+
+        .btn .icon {
+            margin-right: 0.6rem;
+        }
+        .message {
+            margin-top: 1.5rem;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        .message .icon {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+        }
+        .message.success {
+            background-color: #d1fae5; /* green-100 */
+            color: #10b981; /* green-600 */
+            border: 1px solid #34d399; /* green-400 */
+        }
+        .message.error {
+            background-color: #fee2e2; /* red-100 */
+            color: #ef4444; /* red-500 */
+            border: 1px solid #fca5a5; /* red-300 */
+        }
+        .message.info {
+            background-color: #e0f2fe; /* blue-100 */
+            color: #3b82f6; /* blue-500 */
+            border: 1px solid #93c5fd; /* blue-300 */
+        }
+        .input-group {
+            margin-bottom: 1.25rem;
+            flex-grow: 1;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #4a5568; /* Dark gray for labels */
+            margin-bottom: 0.6rem;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper .icon {
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0; /* Gray for input icons */
+            font-size: 1rem;
+        }
+        .input-wrapper input, .input-group select {
+            padding-left: 2.8rem; /* Space for icon */
+            width: 100%;
+            padding-top: 0.8rem;
+            padding-bottom: 0.8rem;
+            border: 1px solid #cbd5e0; /* Light gray border */
+            background-color: #ffffff; /* White input background */
+            color: #1a202c; /* Dark text */
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-wrapper input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #ec4899; /* Pink-500 focus */
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.3); /* Focus ring */
+        }
+        .input-group select {
+            padding-left: 1rem; /* Less padding for select */
+            appearance: none; /* Remove default arrow */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23a0aec0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+        }
+        .input-wrapper input[readonly] {
+            background-color: #f0f4f8; /* Very light gray for readonly */
+            cursor: not-allowed;
+            color: #4a5568; /* Darker gray for readonly text */
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 1.25rem;
+            align-items: flex-end;
+        }
+
+        /* Reseller Card Specific Styles */
+        .reseller-card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .reseller-item-card {
+            background-color: #ffffff;
+            padding: 1.8rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            position: relative;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .reseller-item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .reseller-item-card .reseller-info p {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+            color: #4a5568; /* Dark gray for info text */
+        }
+        .reseller-item-card .reseller-info p .fas {
+            margin-right: 0.8rem;
+            color: #ec4899; /* Pink-500 for info icons */
+            font-size: 1.15rem;
+        }
+        .reseller-item-card .reseller-info p .font-semibold {
+            color: #1a202c; /* Dark text for important values */
+        }
+        .reseller-item-card .reseller-info p .status-active {
+            color: #22c55e;
+            font-weight: 600;
+        }
+        .reseller-item-card .reseller-info p .status-inactive {
+            color: #ef4444;
+            font-weight: 600;
+        }
+        .reseller-item-card .action-buttons-bottom {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            border-top: 1px solid #edf2f7;
+            padding-top: 1.25rem;
+        }
+        .reseller-item-card .action-buttons-bottom button {
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            border: none;
+        }
+        .reseller-item-card .action-buttons-bottom button:active {
+            transform: scale(0.95);
+        }
+        .reseller-item-card .action-buttons-bottom button.delete-btn {
+            background-color: #ef4444;
+            color: white;
+        }
+        .reseller-item-card .action-buttons-bottom button.delete-btn:hover {
+            background-color: #dc2626;
+        }
+        .reseller-item-card .action-buttons-bottom button.toggle-btn-deactivate {
+            background-color: #fbbf24;
+            color: #1a202c;
+        }
+        .reseller-item-card .action-buttons-bottom button.toggle-btn-deactivate:hover {
+            background-color: #f59e0b;
+        }
+        .reseller-item-card .action-buttons-bottom button.toggle-btn-activate {
+            background-color: #22c55e;
+            color: #ffffff;
+        }
+        .reseller-item-card .action-buttons-bottom button.toggle-btn-activate:hover {
+            background-color: #16a34a;
+        }
+        .reseller-item-card .action-buttons-bottom button.edit-btn {
+            background-color: #ec4899; /* Pink-500 */
+            color: white;
+        }
+        .reseller-item-card .action-buttons-bottom button.edit-btn:hover {
+            background-color: #db2777; /* Pink-600 */
+        }
+
+        /* History Card Specific Styles */
+        .history-card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .history-item-card {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .history-item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        .history-item-card p {
+            margin-bottom: 0.6rem;
+            color: #4a5568; /* Dark gray for info text */
+        }
+        .history-item-card .timestamp {
+            font-size: 0.8rem;
+            color: #718096; /* Medium gray */
+            text-align: right;
+            margin-top: 1rem;
+            border-top: 1px dashed #e2e8f0;
+            padding-top: 0.8rem;
+        }
+        .history-item-card .action-type {
+            font-weight: 700;
+            color: #ec4899; /* Pink-500 for action type */
+            font-size: 1.05rem;
+        }
+        .history-item-card pre {
+            background-color: #f7fafc; /* Very light gray for code blocks */
+            border: 1px solid #edf2f7;
+            border-radius: 6px;
+            padding: 0.8rem;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+            font-size: 0.85rem;
+            color: #2d3748; /* Darker gray for code text */
+            overflow-x: auto;
+        }
+
+        /* Switch styles for settings - Modern Toggle */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 28px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e0; /* Off state gray */
+            transition: .4s;
+            border-radius: 28px;
+            border: 1px solid #a0aec0;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #ec4899; /* Pink-500 for active switch */
+            border-color: #db2777; /* Pink-600 */
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.3);
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Admin Panel Specific UI tweaks */
+        .admin-logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 1.8rem;
+            display: block;
+            border: 3px solid #ec4899; /* Pink-500 border */
+            box-shadow: 0 0 0 5px rgba(236, 72, 153, 0.2);
+        }
+        .admin-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ec4899; /* Pink-500 */
+            margin-bottom: 2.5rem;
+            text-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
+        }
+        .sidebar-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: #a0aec0; /* Gray for close button */
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: color 0.2s ease-in-out;
+        }
+        .sidebar-close-btn:hover {
+            color: #1a202c; /* Darker on hover */
+        }
+        .text-gradient {
+            background: linear-gradient(to right, #ec4899, #db2777); /* Pink gradient */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .key-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .key-input-group label {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #4a5568; /* Dark gray for labels */
+        }
+        .key-input-group label .fas {
+            margin-right: 0.75rem;
+            color: #ec4899; /* Pink-500 for label icons */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%); /* Start hidden on mobile */
+                padding-top: 5rem; /* Space for toggle button */
+            }
+            .sidebar.active {
+                transform: translateX(0); /* Fully open on mobile */
+                box-shadow: none; /* No shadow when full screen */
+                border-right: none;
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 1.5rem;
+            }
+            body.sidebar-open .main-content,
+            body.sidebar-open.sidebar-compact .main-content { /* These classes are mostly for desktop, but included for safety */
+                margin-left: 0;
+                width: 100%;
+                overflow: hidden;
+            }
+            .sidebar-toggle {
+                left: 15px;
+                top: 15px;
+                background-color: #ec4899; /* Keep it prominent */
+                color: white;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
+            body.sidebar-open .sidebar-toggle,
+            body.sidebar-open.sidebar-compact .sidebar-toggle {
+                left: calc(100% - 60px); /* Move toggle to right when sidebar is open */
+                background-color: #ec4899;
+                color: white;
+            }
+            .admin-title {
+                font-size: 1.5rem;
+            }
+            .card-title {
+                font-size: 1.4rem;
+            }
+            .card-title .icon {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex min-h-screen">
+    <!-- Sidebar Toggle Button -->
+    <div id="sidebarToggle" class="sidebar-toggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <div id="sidebar" class="sidebar">
+        <span class="sidebar-close-btn" id="sidebarCloseBtn"><i class="fas fa-times"></i></span>
+        <img src="https://placehold.co/70x70/ec4899/ffffff?text=OX" alt="ORACLE X AI Logo" class="admin-logo">
+        <div class="admin-title">ORACLE X AI</div>
+        <nav>
+            <a href="#" class="sidebar-link active" data-section="keyGeneratorSection">
+                <i class="fas fa-key"></i> <span>Create Access Key</span>
+            </a>
+            <a href="#" class="sidebar-link" data-section="manageResellersSection">
+                <i class="fas fa-user-plus"></i> <span>Manage Resellers</span>
+            </a>
+            <a href="#" class="sidebar-link" data-section="manageHistorySection">
+                <i class="fas fa-history"></i> <span>Action History</span>
+            </a>
+            <a href="#" class="sidebar-link" data-section="manageSettingsSection">
+                <i class="fas fa-cogs"></i> <span>System Settings</span>
+            </a>
+            <a href="#" class="sidebar-link" data-section="advancedToolsSection">
+                <i class="fas fa-tools"></i> <span>Advanced Tools</span>
+            </a>
+        </nav>
+        <a href="logout.html" class="btn btn-danger mt-8 w-full text-center">
+            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+        </a>
+        <div class="text-xs text-center text-gray-500 mt-6">2025 © Copyright by ORACLE X AI</div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-10 pb-4 border-b border-gray-200">
+            <span id="currentSectionTitle" class="text-gradient">Create Access Key</span>
+        </h1>
+
+        <!-- Key Generator Section -->
+        <div id="keyGeneratorSection" class="content-section">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="card lg:col-span-1">
+                    <h2 class="card-title">
+                        <span class="icon fas fa-plus-circle"></span>Create New Access Key
+                    </h2>
+                    <div id="key-creation" class="space-y-5 mb-6">
+                        <div class="input-group">
+                            <label for="key">
+                                <i class="fas fa-fingerprint"></i> Key
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-fingerprint icon"></i>
+                                <input type="text" id="key" placeholder="Enter key"
+                                    class="w-full">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="create_deviceId">
+                                <i class="fas fa-desktop"></i> Device ID (optional)
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-desktop icon"></i>
+                                <input type="text" id="create_deviceId" placeholder="Enter Device ID (e.g., USER-PC-001)"
+                                    class="w-full">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="input-group">
+                                <label for="durationValue">
+                                    <i class="fas fa-hourglass-half"></i> Duration Value
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-sort-numeric-up-alt icon"></i>
+                                    <input type="number" id="durationValue" placeholder="Duration value" value="1" min="1"
+                                        class="w-full">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="durationUnit">
+                                    <i class="fas fa-calendar-alt"></i> Duration Unit
+                                </label>
+                                <select id="durationUnit"
+                                    class="w-full">
+                                    <option value="minutes">Minutes</option>
+                                    <option value="days" selected>Days</option>
+                                    <option value="months">Months</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="createKey()"
+                            class="btn btn-primary w-full">
+                            <i class="fas fa-plus-square mr-2"></i>Create Key
+                        </button>
+                        <button onclick="generateRandomKey()"
+                            class="btn btn-warning w-full">
+                            <i class="fas fa-dice mr-2"></i>Generate Random Key
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card lg:col-span-2">
+                    <h2 class="card-title flex items-center justify-between">
+                        <span><span class="icon fas fa-list-alt"></span>Current Access Keys</span>
+                        <span id="keyCount" class="text-sm text-gray-500">TOTAL KEYS: 0</span>
+                    </h2>
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <i class="fas fa-search icon"></i>
+                            <input type="text" id="search" placeholder="Search keys..." onkeyup="renderAccessKeys()"
+                                    class="w-full">
+                        </div>
+                    </div>
+                    <div id="key-list-container" class="overflow-y-auto max-h-96 pr-2">
+                        <div id="keys" class="space-y-4">
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Resellers Section -->
+        <div id="manageResellersSection" class="content-section hidden">
+            <div class="card">
+                <h2 class="card-title"><span class="icon fas fa-user-plus"></span> Generate Reseller Account</h2>
+                <div class="input-group">
+                    <label for="resellerUsername"><i class="fas fa-user"></i> Username</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user icon"></i>
+                        <input type="text" id="resellerUsername" placeholder="Enter username"
+                            class="w-full">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="resellerPassword"><i class="fas fa-lock"></i> Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock icon"></i>
+                        <input type="password" id="resellerPassword" placeholder="Enter password"
+                            class="w-full">
+                    </div>
+                </div>
+                <div class="flex-row">
+                    <div class="input-group">
+                        <label for="resellerDuration"><i class="fas fa-clock"></i> Duration</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-sort-numeric-up-alt icon"></i>
+                            <input type="number" id="resellerDuration" value="30" min="1" placeholder="Duration"
+                                class="w-full">
+                        </div>
+                    </div>
+                    <div class="input-group" style="flex-grow: 0;">
+                        <label for="resellerDurationUnit"><i class="fas fa-calendar-day"></i> Unit</label>
+                        <select id="resellerDurationUnit"
+                            class="w-full">
+                            <option value="days">Days</option>
+                            <option value="months">Months</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="generateResellerBtn" class="btn btn-primary w-full"><span class="icon fas fa-user-check"></span> Create Reseller</button>
+                <p id="generateResellerMessage" class="message"></p>
+            </div>
+
+            <h3 class="text-3xl font-bold text-gray-800 text-center mt-10 mb-6">
+                <span class="text-gradient fas fa-users mr-3"></span>Manage Existing Resellers
+            </h3>
+            <div id="resellerListContainer" class="reseller-card-container">
+                </div>
+        </div>
+
+        <!-- Manage History Section -->
+        <div id="manageHistorySection" class="content-section hidden">
+            <div class="card">
+                <h2 class="card-title"><span class="icon fas fa-history"></span> Action History Log</h2>
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <i class="fas fa-search icon"></i>
+                        <input type="text" id="historySearch" placeholder="Search history..." onkeyup="renderHistory()"
+                            class="w-full">
+                    </div>
+                </div>
+                <div id="historyListContainer" class="history-card-container">
+                    </div>
+            </div>
+        </div>
+
+        <!-- Manage Settings Section -->
+        <div id="manageSettingsSection" class="content-section hidden">
+            <div class="card">
+                <h2 class="card-title"><span class="icon fas fa-cogs"></span> System & Web Settings</h2>
+                <div class="input-group mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">System Modes</label>
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
+                        <span class="text-gray-700">Maintenance Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="maintenanceModeToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="flex justify-between items-center mb-6 pb-2 border-b border-gray-200">
+                        <span class="text-gray-700">Web Off (404 Mode)</span>
+                        <label class="switch">
+                            <input type="checkbox" id="webOffToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="redirectUrl" class="block text-sm font-medium text-gray-700 mb-3">Redirect Settings</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-external-link-alt icon"></i>
+                        <input type="text" id="redirectUrl" placeholder="Enter redirect URL"
+                            class="w-full">
+                    </div>
+                </div>
+                <button id="saveSettingsBtn" class="btn btn-primary mt-4"><span class="icon fas fa-save"></span> Save Changes</button>
+                <p id="settingsMessage" class="message"></p>
+            </div>
+        </div>
+
+        <!-- Advanced Tools Section (New) -->
+        <div id="advancedToolsSection" class="content-section hidden">
+            <div class="card">
+                <h2 class="card-title"><span class="icon fas fa-tools"></span> Advanced Management Tools</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Global Key Status Toggle -->
+                    <div class="card bg-gray-50 border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-toggle-on mr-3 text-pink-500"></i>Global Key Status
+                        </h3>
+                        <p class="text-gray-600 mb-4">Quickly activate or deactivate all access keys across the system. Use with caution.</p>
+                        <button onclick="window.confirmAction('confirm', 'Toggle All Keys', 'Are you sure you want to toggle the status of ALL access keys?', toggleAllAccessKeys)"
+                                class="btn btn-warning w-full">
+                            <i class="fas fa-power-off mr-2"></i>Toggle All Keys Status
+                        </button>
+                    </div>
+
+                    <!-- Clear Expired Keys -->
+                    <div class="card bg-gray-50 border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-broom mr-3 text-red-500"></i>Clear Expired Keys
+                        </h3>
+                        <p class="text-gray-600 mb-4">Remove all expired access keys from the database to clean up old entries.</p>
+                        <button onclick="window.confirmAction('confirm', 'Clear Expired Keys', 'Are you sure you want to delete ALL EXPIRED access keys? This cannot be undone.', clearExpiredAccessKeys)"
+                                class="btn btn-danger w-full">
+                            <i class="fas fa-eraser mr-2"></i>Clear Expired Keys
+                        </button>
+                    </div>
+
+                    <!-- Reset All Reseller Passwords -->
+                    <div class="card bg-gray-50 border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-sync-alt mr-3 text-yellow-500"></i>Reset All Reseller Passwords
+                        </h3>
+                        <p class="text-gray-600 mb-4">Generate new random passwords for all reseller accounts. Resellers will need to be informed.</p>
+                        <button onclick="window.confirmAction('confirm', 'Reset All Reseller Passwords', 'Are you sure you want to reset passwords for ALL resellers? They will receive new random passwords.', resetAllResellerPasswords)"
+                                class="btn btn-warning w-full">
+                            <i class="fas fa-key mr-2"></i>Reset All Reseller Passwords
+                        </button>
+                    </div>
+
+                     <!-- Clear All History -->
+                     <div class="card bg-gray-50 border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-history mr-3 text-purple-500"></i>Clear All History
+                        </h3>
+                        <p class="text-gray-600 mb-4">Permanently delete all action history logs. This action cannot be undone.</p>
+                        <button onclick="window.confirmAction('confirm', 'Clear All History', 'Are you sure you want to clear ALL history logs? This cannot be undone.', clearAllHistory)"
+                                class="btn btn-danger w-full">
+                            <i class="fas fa-trash-alt mr-2"></i>Clear All History
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Custom Modal for Alerts/Confirmations -->
+    <div id="customModal" class="modal">
+        <div class="modal-content text-center">
+            <span class="close-button" onclick="window.closeCustomModal()">&times;</span>
+            <div id="modalIcon" class="text-4xl mb-4"></div>
+            <h3 id="modalTitle" class="text-xl font-bold text-gray-800 mb-2"></h3>
+            <p id="modalMessage" class="text-gray-700 mb-6"></p>
+            <div id="modalActions" class="flex justify-center space-x-4">
+                <button id="modalConfirmBtn" class="btn btn-primary hidden">Confirm</button>
+                <button id="modalCloseBtn" class="btn btn-ghost">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Access Key Modal -->
+    <div id="editAccessKeyModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.closeEditAccessKeyModal()">&times;</span>
+            <h2 class="text-xl font-semibold text-gray-800 mb-6">Edit Access Key</h2>
+            <form id="editAccessKeyForm" class="space-y-4">
+                <input type="hidden" id="edit_key_original_name">
+                <div class="input-group">
+                    <label for="edit_key_name"><i class="fas fa-fingerprint"></i> Key Name</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-fingerprint icon"></i>
+                        <input type="text" id="edit_key_name" name="edit_key_name" required readonly
+                            class="w-full">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="edit_key_deviceId"><i class="fas fa-desktop"></i> Device ID (leave blank for UNBOUND)</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-desktop icon"></i>
+                        <input type="text" id="edit_key_deviceId" name="edit_key_deviceId"
+                            class="w-full">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="input-group">
+                        <label for="edit_durationValue"><i class="fas fa-plus"></i> Add Duration Value</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-sort-numeric-up-alt icon"></i>
+                            <input type="number" id="edit_durationValue" name="edit_durationValue" min="1" value="1" required
+                                class="w-full">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="edit_durationUnit"><i class="fas fa-calendar-alt"></i> Duration Unit</label>
+                        <select id="edit_durationUnit" name="edit_durationUnit" required
+                            class="w-full">
+                            <option value="minutes">Minutes</option>
+                            <option value="days">Days</option>
+                            <option value="months">Months</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="window.closeEditAccessKeyModal()" class="btn btn-ghost">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Reseller Modal -->
+    <div id="editResellerModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="window.closeEditResellerModal()">&times;</span>
+            <h2 class="text-xl font-semibold text-gray-800 mb-6">Edit Reseller Account</h2>
+            <form id="editResellerForm" class="space-y-4">
+                <input type="hidden" id="edit_reseller_id">
+                <div class="input-group">
+                    <label for="edit_reseller_username"><i class="fas fa-user"></i> Username</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user icon"></i>
+                        <input type="text" id="edit_reseller_username" name="edit_reseller_username" required
+                            class="w-full">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="edit_reseller_password"><i class="fas fa-lock"></i> New Password (leave blank to keep current)</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock icon"></i>
+                        <input type="password" id="edit_reseller_password" name="edit_reseller_password"
+                            class="w-full">
+                    </div>
+                </div>
+                 <div class="input-group">
+                    <label for="edit_reseller_deviceId"><i class="fas fa-desktop"></i> Device ID (leave blank for UNBOUND)</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-desktop icon"></i>
+                        <input type="text" id="edit_reseller_deviceId" name="edit_reseller_deviceId"
+                            class="w-full">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="input-group">
+                        <label for="edit_reseller_durationValue"><i class="fas fa-plus"></i> Add Duration Value</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-sort-numeric-up-alt icon"></i>
+                            <input type="number" id="edit_reseller_durationValue" name="edit_reseller_durationValue" min="1" value="1" required
+                                class="w-full">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="edit_reseller_durationUnit"><i class="fas fa-calendar-alt"></i> Duration Unit</label>
+                        <select id="edit_reseller_durationUnit" name="edit_reseller_durationUnit" required
+                            class="w-full">
+                            <option value="minutes">Minutes</option>
+                            <option value="days">Days</option>
+                            <option value="months">Months</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="window.closeEditResellerModal()" class="btn btn-ghost">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script type="module">
+        // Import Firebase modules, including auth modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
+        import { getDatabase, ref, push, set, onValue, get, child, update, remove } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js';
+        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js'; // Import auth functions
+
+        // Firebase Configuration
+        // NOTE: In a real production environment, never expose your API keys directly in client-side code.
+        // Use Firebase Admin SDK on a server or Firebase Cloud Functions for secure operations.
+        const firebaseConfig = {
+            apiKey: "AIzaSyBS8SJNrWcrnNhxzgSnMhmLWslSnxJ3vXM",
+            authDomain: "newq-7386b.firebaseapp.com",
+            projectId: "newq-7386b",
+            storageBucket: "newq-7386b.firebasestorage.app",
+            messagingSenderId: "939070208594",
+            appId: "1:939070208594:web:b7b952fb7ca541ab32fd8b",
+            measurementId: "G-Q0GYMZR5TY"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app); // Initialize Firebase Auth
+
+        // Authenticate anonymously when the app starts
+        signInAnonymously(auth)
+            .then(() => {
+                console.log("Firebase Anonymous authentication successful.");
+                // Now that we are authenticated, proceed with loading data
+                renderAccessKeys();
+                renderResellers();
+                loadSettings();
+                renderHistory();
+            })
+            .catch((error) => {
+                console.error("Firebase Anonymous authentication failed:", error);
+                openCustomModal('error', 'Authentication Failed', 'Failed to authenticate with Firebase. Please check your Firebase project settings and rules.');
+            });
+
+
+        const accessKeysRef = ref(db, 'accessKeys');
+        const resellersRef = ref(db, 'resellers');
+        const settingsRef = ref(db, 'settings');
+        const historyRef = ref(db, 'history');
+
+        // --- Custom Modal Functions ---
+        const customModal = document.getElementById('customModal');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+        /**
+         * Opens a custom modal for various types of messages (success, error, info, confirm).
+         * @param {string} type - The type of modal ('success', 'error', 'info', 'confirm').
+         * @param {string} title - The title of the modal.
+         * @param {string} message - The message content, can include HTML.
+         * @param {function} [onConfirm=null] - Callback function for 'confirm' type modal.
+         */
+        function openCustomModal(type, title, message, onConfirm = null) {
+            modalIcon.className = 'text-4xl mb-4'; // Reset classes
+            modalTitle.textContent = title;
+            modalMessage.innerHTML = message;
+
+            if (type === 'success') {
+                modalIcon.classList.add('text-green-500');
+                modalIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+            } else if (type === 'error') {
+                modalIcon.classList.add('text-red-500');
+                modalIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+            } else if (type === 'info') {
+                modalIcon.classList.add('text-blue-500');
+                modalIcon.innerHTML = '<i class="fas fa-info-circle"></i>';
+            } else if (type === 'confirm') {
+                modalIcon.classList.add('text-yellow-500');
+                modalIcon.innerHTML = '<i class="fas fa-question-circle"></i>';
+            }
+
+            if (onConfirm) {
+                modalConfirmBtn.style.display = 'inline-block';
+                modalConfirmBtn.onclick = () => {
+                    onConfirm();
+                    window.closeCustomModal();
+                };
+                modalCloseBtn.textContent = 'Cancel';
+                modalConfirmBtn.className = 'btn btn-primary'; // Ensure confirm button style
+            } else {
+                modalConfirmBtn.style.display = 'none';
+                modalCloseBtn.textContent = 'Close';
+            }
+            modalCloseBtn.onclick = window.closeCustomModal;
+            customModal.style.display = 'flex';
+        }
+
+        /**
+         * Closes the custom modal and resets its state.
+         */
+        window.closeCustomModal = function() { // Made global
+            customModal.style.display = 'none';
+            modalConfirmBtn.onclick = null;
+            modalCloseBtn.onclick = null;
+        }
+
+        // Universal Confirmation/Action Wrapper
+        window.confirmAction = function(type, title, message, callback) {
+            openCustomModal(type, title, message, callback);
+        }
+
+        // --- Utility Functions ---
+
+        /**
+         * Formats milliseconds into a human-readable time left string (e.g., "1M 5D 3H").
+         * @param {number} ms - Time in milliseconds.
+         * @returns {string} Formatted time left string.
+         */
+        function formatTimeLeft(ms) {
+            const secs = Math.floor(ms / 1000);
+            if (secs <= 0) return 'EXPIRED';
+
+            const secondsInMinute = 60;
+            const secondsInHour = 60 * secondsInMinute;
+            const secondsInDay = 24 * secondsInHour;
+            const secondsInMonth = 30 * secondsInDay; // Approximation for display
+
+            const months = Math.floor(secs / secondsInMonth);
+            const remainingSecsAfterMonths = secs % secondsInMonth;
+            const days = Math.floor(remainingSecsAfterMonths / secondsInDay);
+            const remainingSecsAfterDays = remainingSecsAfterMonths % secondsInDay;
+            const hours = Math.floor(remainingSecsAfterDays / secondsInHour);
+            const remainingSecsAfterHours = remainingSecsAfterDays % secondsInHour;
+            const minutes = Math.floor(remainingSecsAfterHours / secondsInMinute);
+            const seconds = remainingSecsAfterHours % secondsInMinute;
+
+            let timeLeftStr = "";
+            if (months > 0) timeLeftStr += `${months}M `;
+            if (days > 0) timeLeftStr += `${days}D `;
+            if (hours > 0) timeLeftStr += `${hours}H `;
+            if (minutes > 0) timeLeftStr += `${minutes}M `;
+            if (seconds > 0 || (months === 0 && days === 0 && hours === 0 && minutes === 0)) timeLeftStr += `${seconds}S`;
+
+            return timeLeftStr.trim();
+        }
+
+        /**
+         * Calculates the expiry timestamp based on a duration value and unit.
+         * @param {number} durationValue - The numerical value of the duration.
+         * @param {string} durationUnit - The unit of duration ('minutes', 'days', 'months').
+         * @param {number} [currentTimestamp=Date.now()] - The starting timestamp to calculate from.
+         * @returns {number} The calculated expiry timestamp in milliseconds.
+         */
+        function calculateExpiry(durationValue, durationUnit, currentTimestamp = Date.now()) {
+            let expiryDate = new Date(currentTimestamp);
+
+            if (durationUnit === 'minutes') {
+                expiryDate.setMinutes(expiryDate.getMinutes() + durationValue);
+            } else if (durationUnit === 'days') {
+                expiryDate.setDate(expiryDate.getDate() + durationValue);
+            } else if (durationUnit === 'months') {
+                expiryDate.setMonth(expiryDate.getMonth() + durationValue);
+            } else {
+                return null;
+            }
+            return expiryDate.getTime();
+        }
+
+        /**
+         * Logs an action to the history in Firebase.
+         * @param {string} actionType - The type of action performed (e.g., "Access Key Created").
+         * @param {object} details - An object containing details about the action.
+         */
+        async function logAction(actionType, details) {
+            try {
+                await push(historyRef, {
+                    timestamp: new Date().toISOString(),
+                    action: actionType,
+                    details: details
+                });
+            } catch (error) {
+                console.error("Error logging action to history:", error);
+            }
+        }
+
+        // --- Access Key Management Functions ---
+
+        /**
+         * Creates a new access key in Firebase.
+         */
+        window.createKey = async function () {
+            const key = document.getElementById('key').value.trim();
+            const deviceId = document.getElementById('create_deviceId').value.trim() || null;
+            const durationValue = parseInt(document.getElementById('durationValue').value);
+            const durationUnit = document.getElementById('durationUnit').value;
+
+            if (!key || !durationValue) {
+                openCustomModal('error', 'Input Error', "Please ensure 'Key' and 'Duration Value' are filled.");
+                return;
+            }
+
+            try {
+                const snapshot = await get(child(accessKeysRef, key));
+                if (snapshot.exists()) {
+                    openCustomModal('info', 'Creation Failed', `Access key "${key}" already exists. Please choose a different key.`);
+                    return;
+                }
+
+                const expiry = calculateExpiry(durationValue, durationUnit);
+
+                await set(child(accessKeysRef, key), {
+                    expiry: expiry,
+                    deviceId: deviceId,
+                    active: true, // New keys are active by default
+                    createdAt: Date.now() // Timestamp for creation
+                });
+
+                document.getElementById('key').value = "";
+                document.getElementById('create_deviceId').value = "";
+                document.getElementById('durationValue').value = "1";
+                document.getElementById('durationUnit').value = "days";
+                openCustomModal('success', 'Key Created', `Access key "${key}" created successfully!`);
+                renderAccessKeys();
+                await logAction('Access Key Created', { key: key, deviceId: deviceId, durationValue: durationValue, durationUnit: durationUnit, expiry: new Date(expiry).toISOString() });
+            } catch (error) {
+                console.error("Error creating key:", error);
+                openCustomModal('error', 'Creation Failed', 'Failed to create key: ' + error.message);
+            }
+        };
+
+        /**
+         * Generates a random key and populates the key input field.
+         */
+        window.generateRandomKey = function () {
+            const part = Math.random().toString(36).substring(2, 10).toUpperCase();
+            document.getElementById('key').value = "OXAI-"+part; // Changed prefix to OXAI
+        };
+
+        /**
+         * Renders the list of access keys from Firebase, applying search filter.
+         */
+        window.renderAccessKeys = function () {
+            const query = document.getElementById('search').value.toLowerCase();
+            get(accessKeysRef).then(snapshot => {
+                const container = document.getElementById('keys');
+                const keyCount = document.getElementById('keyCount');
+                container.innerHTML = '';
+                let total = 0;
+                if (!snapshot.exists() || Object.keys(snapshot.val()).length === 0) {
+                    container.innerHTML = '<div class="text-center text-gray-500 py-6 text-lg">No access keys found. Create one to get started!</div>';
+                    keyCount.innerText = `TOTAL KEYS: 0`;
+                    return;
+                }
+                snapshot.forEach(childSnapshot => {
+                    const k = childSnapshot.key;
+                    const data = childSnapshot.val();
+                    if (!k.toLowerCase().includes(query)) return;
+
+                    const now = Date.now();
+                    const expired = data.expiry < now;
+                    const timeLeft = expired ? 'EXPIRED' : formatTimeLeft(data.expiry - now);
+                    const isActive = data.active !== false; // Default to true if not set
+
+                    const deviceIdText = data.deviceId ? data.deviceId : 'UNBOUND';
+                    const deviceStatusClass = data.deviceId ? 'device-bound' : 'device-unbound';
+
+                    const statusClass = isActive ? 'status-active' : 'status-inactive';
+                    const statusText = isActive ? 'ACTIVE' : 'INACTIVE';
+                    const toggleButtonIcon = isActive ? 'fa-power-off' : 'fa-play-circle';
+                    const toggleButtonClass = isActive ? 'btn-warning' : 'btn-success'; // Yellow for deactivate, Green for activate
+
+                    total++;
+                    container.innerHTML += `
+                        <div class="key-box">
+                            <div class="flex-row">
+                                <b class="text-gray-800 text-lg">${k}</b> <!-- Changed to gray-800 -->
+                                <div class="flex space-x-3">
+                                    <button onclick="window.editAccessKey('${k}', '${data.deviceId || ''}')"
+                                        class="text-pink-500 hover:text-pink-700 transition-colors" title="Edit Key"> <!-- Changed to pink-500 -->
+                                        <i class="fas fa-edit text-xl"></i>
+                                    </button>
+                                    <button onclick="window.confirmAction('confirm', '${isActive ? 'Deactivate' : 'Activate'} Key', 'Are you sure you want to ${isActive ? 'deactivate' : 'activate'} key \\'${k}\\'?', () => window.toggleAccessKeyStatus('${k}', ${isActive}))"
+                                        class="${isActive ? 'text-yellow-500 hover:text-yellow-700' : 'text-green-500 hover:text-green-700'} transition-colors" title="${isActive ? 'Deactivate' : 'Activate'} Key"> <!-- Adjusted colors -->
+                                        <i class="fas ${toggleButtonIcon} text-xl"></i>
+                                    </button>
+                                    <button onclick="window.confirmAction('confirm', 'Delete Key', 'Are you sure you want to delete key \\'${k}\\'? This action cannot be undone.', () => window.deleteKey('${k}'))"
+                                        class="text-red-500 hover:text-red-700 transition-colors" title="Delete Key"> <!-- Adjusted colors -->
+                                        <i class="fas fa-trash-alt text-xl"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="text-gray-700 text-sm">STATUS: <span class="${statusClass}">${statusText}</span></div> <!-- Changed to gray-700 -->
+                            <div class="text-gray-700 text-sm">EXPIRES IN: <span class="${expired ? 'expired' : 'valid'}">${timeLeft}</span></div> <!-- Changed to gray-700 -->
+                            <div class="text-gray-700 text-sm">DEVICE: <span class="${deviceStatusClass}">${deviceIdText}</span></div> <!-- Changed to gray-700 -->
+                            <div class="text-gray-500 text-xs mt-1">Last updated: ${new Date(data.expiry).toLocaleString()}</div>
+                        </div>
+                    `;
+                });
+                keyCount.innerText = `TOTAL KEYS: ${total}`;
+            }).catch(error => {
+                console.error("Error rendering access keys:", error);
+                openCustomModal('error', 'Key List Error', 'Failed to load access keys: ' + error.message);
+            });
+        }
+
+        /**
+         * Deletes an access key from Firebase.
+         * @param {string} k - The key to delete.
+         */
+        window.deleteKey = async function (k) {
+            try {
+                await remove(child(accessKeysRef, k));
+                openCustomModal('success', 'Key Deleted', `Access key "${k}" deleted successfully.`);
+                renderAccessKeys();
+                await logAction('Access Key Deleted', { key: k });
+            } catch (error) {
+                console.error("Error deleting key:", error);
+                openCustomModal('error', 'Deletion Failed', 'Failed to delete key: ' + error.message);
+            }
+        };
+
+        // --- Edit Access Key Modal Functions ---
+        const editAccessKeyModal = document.getElementById('editAccessKeyModal');
+        const editAccessKeyForm = document.getElementById('editAccessKeyForm');
+        const editKeyOriginalName = document.getElementById('edit_key_original_name');
+        const editKeyName = document.getElementById('edit_key_name');
+        const editKeyDeviceId = document.getElementById('edit_key_deviceId');
+        const editDurationValue = document.getElementById('edit_durationValue');
+        const editDurationUnit = document.getElementById('edit_durationUnit');
+
+        /**
+         * Opens the edit access key modal and pre-fills its fields.
+         * @param {string} keyName - The name of the key to edit.
+         * @param {string} deviceId - The current device ID associated with the key.
+         */
+        window.editAccessKey = function(keyName, deviceId) {
+            editKeyOriginalName.value = keyName;
+            editKeyName.value = keyName;
+            editKeyDeviceId.value = deviceId || '';
+            editDurationValue.value = 1; // Default to adding 1 unit
+            editDurationUnit.value = 'days'; // Default to adding days
+            editAccessKeyModal.style.display = 'flex';
+        }
+
+        /**
+         * Closes the edit access key modal and resets the form.
+         */
+        window.closeEditAccessKeyModal = function() {
+            editAccessKeyModal.style.display = 'none';
+            editAccessKeyForm.reset();
+        }
+
+        editAccessKeyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const originalKeyName = editKeyOriginalName.value;
+            const newDeviceId = editKeyDeviceId.value.trim() || null;
+            const newDurationValue = parseInt(editDurationValue.value);
+            const newDurationUnit = editDurationUnit.value;
+
+            if (!originalKeyName || !newDurationValue || !newDurationUnit) {
+                openCustomModal('error', 'Input Error', 'Please fill in all required fields for editing.');
+                return;
+            }
+
+            const currentKeySnapshot = await get(child(accessKeysRef, originalKeyName));
+            let currentExpiry = Date.now();
+            if (currentKeySnapshot.exists()) {
+                currentExpiry = currentKeySnapshot.val().expiry;
+            }
+
+            const newExpiry = calculateExpiry(newDurationValue, newDurationUnit, currentExpiry);
+
+            try {
+                const updates = {
+                    deviceId: newDeviceId,
+                    expiry: newExpiry
+                };
+
+                await update(child(accessKeysRef, originalKeyName), updates);
+                openCustomModal('success', 'Key Updated', `Access key "${originalKeyName}" updated successfully!`);
+                window.closeEditAccessKeyModal();
+                renderAccessKeys();
+                await logAction('Access Key Edited', { key: originalKeyName, updatedFields: updates });
+            } catch (error) {
+                console.error("Error updating access key:", error);
+                openCustomModal('error', 'Update Failed', 'Failed to update access key: ' + error.message);
+            }
+        });
+
+        /**
+         * Toggles the active status of an access key.
+         * @param {string} key - The key to toggle.
+         * @param {boolean} currentStatus - The current active status of the key.
+         */
+        window.toggleAccessKeyStatus = async function(key, currentStatus) {
+            const newStatus = !currentStatus;
+            const actionText = newStatus ? 'activate' : 'deactivate';
+            try {
+                await update(child(accessKeysRef, key), { active: newStatus });
+                openCustomModal('success', 'Status Changed', `Access key "${key}" ${actionText}d successfully.`);
+                renderAccessKeys();
+                await logAction(`Access Key ${newStatus ? 'Activated' : 'Deactivated'}`, { key: key, newStatus: newStatus });
+            } catch (error) {
+                console.error("Error toggling access key status:", error);
+                openCustomModal('error', 'Status Change Failed', 'Failed to toggle access key status: ' + error.message);
+            }
+        };
+
+        // --- Sidebar Toggle Logic ---
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+        const body = document.body;
+
+        /**
+         * Toggles the sidebar's visibility and compactness based on screen size.
+         * This function is explicitly called by button clicks.
+         */
+        function toggleSidebar() {
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                // On mobile, sidebar is either fully open or fully closed (slides in/out)
+                sidebar.classList.toggle('active'); // Toggles transform: translateX(0) or (-100%)
+                body.classList.toggle('sidebar-open'); // Add/remove margin to main content
+                // Toggle icon
+                const icon = sidebarToggle.querySelector('.fas');
+                if (sidebar.classList.contains('active')) { // If sidebar is now open
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else { // If sidebar is now closed
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            } else {
+                // On desktop, toggle between full and compact (80px width)
+                sidebar.classList.toggle('active'); // Adds/removes 'active' to switch width
+                body.classList.toggle('sidebar-compact'); // Controls main-content margin-left for compact view
+                body.classList.toggle('sidebar-open', !sidebar.classList.contains('active')); // Controls main-content margin-left for full view
+
+                // Change icon based on compact state
+                const icon = sidebarToggle.querySelector('.fas');
+                if (sidebar.classList.contains('active')) { // If sidebar is now compact
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-arrow-right'); // Icon for expanding it back
+                } else { // If sidebar is now full
+                    icon.classList.remove('fa-arrow-right');
+                    icon.classList.add('fa-bars'); // Icon for compacting it
+                }
+            }
+        }
+
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        sidebarCloseBtn.addEventListener('click', toggleSidebar); // Both buttons now use the same toggle logic
+
+        /**
+         * Sets the initial sidebar state and adjusts it on window resize events,
+         * but only when crossing the mobile/desktop breakpoint to prevent unwanted toggles.
+         */
+        let lastIsMobileState = window.innerWidth <= 768;
+
+        function initializeOrAdjustSidebarState() {
+            const isMobile = window.innerWidth <= 768;
+
+            // Only adjust if the breakpoint is crossed OR on initial load
+            if (isMobile !== lastIsMobileState || !document.body.dataset.sidebarInitialized) {
+                if (isMobile) {
+                    // On mobile, sidebar starts hidden (if not already explicitly opened)
+                    // If it's already active (open), keep it open
+                    if (!sidebar.classList.contains('active')) {
+                        sidebar.classList.add('active'); // default to compact on desktop, hidden on mobile
+                    }
+                    body.classList.remove('sidebar-open'); // No margin left for main content
+                    body.classList.add('sidebar-compact'); // Indicates compact state on mobile (which means open in CSS, but conceptually compact for desktop transition)
+                    sidebarToggle.querySelector('.fas').classList.remove('fa-arrow-right', 'fa-times');
+                    sidebarToggle.querySelector('.fas').classList.add('fa-bars'); // Show bars to open/close
+                    sidebarCloseBtn.style.display = 'block'; // 'x' to close
+                } else {
+                    // On desktop, sidebar starts full (not compact)
+                    sidebar.classList.remove('active'); // Not compact
+                    body.classList.add('sidebar-open'); // Margin left for main content
+                    body.classList.remove('sidebar-compact'); // Not compact
+                    sidebarToggle.querySelector('.fas').classList.remove('fa-times', 'fa-arrow-right');
+                    sidebarToggle.querySelector('.fas').classList.add('fa-bars'); // Show bars to compact
+                    sidebarCloseBtn.style.display = 'block'; // 'x' to toggle desktop full/compact
+                }
+                lastIsMobileState = isMobile;
+                document.body.dataset.sidebarInitialized = 'true'; // Mark as initialized
+            }
+        }
+
+        // Call it once on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', initializeOrAdjustSidebarState);
+        // Add resize listener
+        window.addEventListener('resize', initializeOrAdjustSidebarState);
+
+
+        // --- Sidebar Navigation Logic ---
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        const contentSections = document.querySelectorAll('.content-section');
+        const currentSectionTitle = document.getElementById('currentSectionTitle');
+
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetSectionId = link.dataset.section;
+
+                sidebarLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                contentSections.forEach(section => section.classList.add('hidden'));
+                document.getElementById(targetSectionId).classList.remove('hidden');
+
+                currentSectionTitle.textContent = link.textContent.trim();
+
+                // Close sidebar on link click for smaller screens
+                if (window.innerWidth <= 768) {
+                    toggleSidebar(); // Explicitly close sidebar on mobile after navigating
+                }
+            });
+        });
+
+        // --- Reseller Management Functions ---
+        const resellerListContainer = document.getElementById('resellerListContainer');
+        const resellerUsernameInput = document.getElementById('resellerUsername');
+        const resellerPasswordInput = document.getElementById('resellerPassword');
+        const resellerDurationInput = document.getElementById('resellerDuration');
+        const resellerDurationUnitSelect = document.getElementById('resellerDurationUnit');
+        const generateResellerBtn = document.getElementById('generateResellerBtn');
+        const generateResellerMessage = document.getElementById('generateResellerMessage');
+
+        /**
+         * Renders the list of reseller accounts from Firebase.
+         */
+        window.renderResellers = async function() {
+            resellerListContainer.innerHTML = '';
+            try {
+                const snapshot = await get(resellersRef);
+                if (!snapshot.exists() || Object.keys(snapshot.val()).length === 0) {
+                    resellerListContainer.innerHTML = '<div class="text-center text-gray-500 py-6 text-lg col-span-full">No reseller accounts found. Create one to manage.</div>';
+                    return;
+                }
+                snapshot.forEach(childSnapshot => {
+                    const resellerId = childSnapshot.key;
+                    const data = childSnapshot.val();
+                    const now = Date.now();
+                    const expired = data.expiry < now;
+                    const expiryDateFormatted = new Date(data.expiry).toLocaleString();
+                    const statusText = data.active ? 'Active' : 'Inactive';
+                    const statusClass = data.active ? 'status-active' : 'status-inactive';
+
+                    resellerListContainer.innerHTML += `
+                        <div class="reseller-item-card">
+                            <div class="reseller-info">
+                                <p><i class="fas fa-fingerprint"></i> ID: <span class="font-semibold text-gray-800">${resellerId}</span></p> <!-- Changed to gray-800 -->
+                                <p><i class="fas fa-user-circle"></i> Username: <span class="font-semibold text-gray-800">${data.username}</span></p> <!-- Changed to gray-800 -->
+                                <p><i class="fas fa-key"></i> Password: <span class="font-semibold text-gray-800">${data.password}</span></p> <!-- Changed to gray-800 -->
+                                <p><i class="fas fa-hdd"></i> Device ID: <span class="${data.deviceId ? 'text-blue-500' : 'text-gray-600'}">${data.deviceId || 'UNBOUND'}</span></p> <!-- Adjusted colors -->
+                                <p><i class="fas fa-calendar-times"></i> Expires: <span class="${expired ? 'expired' : 'valid'}">${expiryDateFormatted}</span></p>
+                                <p><i class="fas fa-info-circle"></i> Status: <span class="${statusClass}">${statusText}</span></p>
+                            </div>
+                            <div class="action-buttons-bottom">
+                                <button onclick="window.confirmAction('confirm', 'Delete Reseller', 'Are you sure you want to delete reseller \\'${data.username}\\'?', () => window.deleteReseller('${resellerId}'))"
+                                    class="delete-btn">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </button>
+                                <button onclick="window.confirmAction('confirm', '${data.active ? 'Deactivate' : 'Activate'} Reseller', 'Are you sure you want to ${data.active ? 'deactivate' : 'activate'} reseller \\'${data.username}\\'?', () => window.toggleResellerStatus('${resellerId}', ${data.active}))"
+                                    class="${data.active ? 'toggle-btn-deactivate' : 'toggle-btn-activate'}">
+                                    <i class="fas ${data.active ? 'fa-minus-circle' : 'fa-check-circle'}"></i> ${data.active ? 'Deactivate' : 'Activate'}
+                                </button>
+                                <button onclick="window.editReseller('${resellerId}')" class="edit-btn">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error rendering resellers:", error);
+                openCustomModal('error', 'Reseller List Error', 'Failed to load resellers: ' + error.message);
+            }
+        };
+
+        generateResellerBtn.addEventListener('click', async () => {
+            const username = resellerUsernameInput.value.trim();
+            const password = resellerPasswordInput.value.trim();
+            const durationValue = parseInt(resellerDurationInput.value);
+            const durationUnit = resellerDurationUnitSelect.value;
+
+            if (!username || !password || !durationValue) {
+                openCustomModal('error', 'Input Error', "Please ensure 'Username', 'Password', and 'Duration' are filled.");
+                return;
+            }
+
+            try {
+                // Check if username already exists
+                const usernameSnapshot = await get(resellersRef);
+                let usernameExists = false;
+                usernameSnapshot.forEach(childSnapshot => {
+                    if (childSnapshot.val().username === username) {
+                        usernameExists = true;
+                        return true;
+                    }
+                });
+
+                if (usernameExists) {
+                    openCustomModal('info', 'Creation Failed', `Reseller username "${username}" already exists. Please choose a different username.`);
+                    return;
+                }
+
+                const expiry = calculateExpiry(durationValue, durationUnit);
+
+                const newResellerRef = push(resellersRef); // Generate a unique ID
+                await set(newResellerRef, {
+                    username: username,
+                    password: password,
+                    deviceId: null,
+                    expiry: expiry,
+                    active: true,
+                    createdAt: Date.now()
+                });
+                openCustomModal('success', 'Reseller Generated', `Reseller created:<br><b>ID:</b> ${newResellerRef.key}<br><b>Username:</b> ${username}<br><b>Password:</b> ${password}`);
+                resellerUsernameInput.value = '';
+                resellerPasswordInput.value = '';
+                resellerDurationInput.value = '30';
+                resellerDurationUnitSelect.value = 'days';
+
+                renderResellers();
+                await logAction('Reseller Generated', { resellerId: newResellerRef.key, username: username, expiry: new Date(expiry).toISOString() });
+            } catch (error) {
+                console.error("Error generating reseller:", error);
+                openCustomModal('error', 'Generation Failed', 'Failed to generate reseller: ' + error.message);
+            }
+        });
+
+        /**
+         * Toggles the active status of a reseller account.
+         * @param {string} resellerId - The ID of the reseller to toggle.
+         * @param {boolean} currentStatus - The current active status.
+         */
+        window.toggleResellerStatus = async function(resellerId, currentStatus) {
+            const newStatus = !currentStatus;
+            const actionText = newStatus ? 'activate' : 'deactivate';
+            try {
+                await update(child(resellersRef, resellerId), { active: newStatus });
+                openCustomModal('success', 'Status Changed', `Reseller "${resellerId}" ${actionText}d successfully.`);
+                renderResellers();
+                await logAction(`Reseller ${newStatus ? 'Activated' : 'Deactivated'}`, { resellerId: resellerId, newStatus: newStatus });
+            } catch (error) {
+                console.error("Error toggling reseller status:", error);
+                openCustomModal('error', 'Status Change Failed', 'Failed to toggle reseller status: ' + error.message);
+            }
+        };
+
+        /**
+         * Deletes a reseller account from Firebase.
+         * @param {string} resellerId - The ID of the reseller to delete.
+         */
+        window.deleteReseller = async function(resellerId) {
+            try {
+                await remove(child(resellersRef, resellerId));
+                openCustomModal('success', 'Reseller Deleted', `Reseller "${resellerId}" deleted successfully.`);
+                renderResellers();
+                await logAction('Reseller Deleted', { resellerId: resellerId });
+            } catch (error) {
+                console.error("Error deleting reseller:", error);
+                openCustomModal('error', 'Deletion Failed', 'Failed to delete reseller: ' + error.message);
+            }
+        };
+
+        // --- Edit Reseller Modal Functions ---
+        const editResellerModal = document.getElementById('editResellerModal');
+        const editResellerForm = document.getElementById('editResellerForm');
+        const editResellerId = document.getElementById('edit_reseller_id');
+        const editResellerUsername = document.getElementById('edit_reseller_username');
+        const editResellerPassword = document.getElementById('edit_reseller_password');
+        const editResellerDeviceId = document.getElementById('edit_reseller_deviceId');
+        const editResellerDurationValue = document.getElementById('edit_reseller_durationValue');
+        const editResellerDurationUnit = document.getElementById('edit_reseller_durationUnit');
+
+        /**
+         * Opens the edit reseller modal and pre-fills its fields.
+         * @param {string} resellerId - The ID of the reseller to edit.
+         */
+        window.editReseller = async function(resellerId) {
+            try {
+                const snapshot = await get(child(resellersRef, resellerId));
+                if (!snapshot.exists()) {
+                    openCustomModal('error', 'Reseller Not Found', 'Reseller details could not be loaded.');
+                    return;
+                }
+                const data = snapshot.val();
+                editResellerId.value = resellerId;
+                editResellerUsername.value = data.username;
+                editResellerPassword.value = ''; // Do not pre-fill password for security
+                editResellerDeviceId.value = data.deviceId || '';
+                editResellerDurationValue.value = 1; // Default to adding 1 unit
+                editResellerDurationUnit.value = 'days'; // Default to adding days
+
+                editResellerModal.style.display = 'flex';
+            } catch (error) {
+                console.error("Error loading reseller for edit:", error);
+                openCustomModal('error', 'Edit Error', 'Failed to load reseller for editing: ' + error.message);
+            }
+        };
+
+        /**
+         * Closes the edit reseller modal and resets the form.
+         */
+        window.closeEditResellerModal = function() {
+            editResellerModal.style.display = 'none';
+            editResellerForm.reset();
+        };
+
+        editResellerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resellerId = editResellerId.value;
+            const newUsername = editResellerUsername.value.trim();
+            const newPassword = editResellerPassword.value.trim();
+            const newDeviceId = editResellerDeviceId.value.trim() || null;
+            const durationToAddValue = parseInt(editResellerDurationValue.value);
+            const durationToAddUnit = editResellerDurationUnit.value;
+
+            if (!newUsername || !durationToAddValue || !durationToAddUnit) {
+                openCustomModal('error', 'Input Error', 'Please fill in all required fields for editing.');
+                return;
+            }
+
+            try {
+                const currentResellerSnapshot = await get(child(resellersRef, resellerId));
+                let currentExpiry = Date.now();
+                if (currentResellerSnapshot.exists()) {
+                    currentExpiry = currentResellerSnapshot.val().expiry;
+                }
+
+                const updatedExpiry = calculateExpiry(durationToAddValue, durationToAddUnit, currentExpiry);
+
+                const updates = {
+                    username: newUsername,
+                    deviceId: newDeviceId,
+                    expiry: updatedExpiry
+                };
+                if (newPassword) {
+                    updates.password = newPassword; // Update password only if provided
+                }
+
+                await update(child(resellersRef, resellerId), updates);
+                openCustomModal('success', 'Reseller Updated', `Reseller "${newUsername}" updated successfully!`);
+                window.closeEditResellerModal();
+                renderResellers();
+                await logAction('Reseller Edited', { resellerId: resellerId, updatedFields: updates });
+            } catch (error) {
+                console.error("Error updating reseller:", error);
+                openCustomModal('error', 'Update Failed', 'Failed to update reseller: ' + error.message);
+            }
+        });
+
+
+        // --- Web Settings Management Functions ---
+        const maintenanceModeToggle = document.getElementById('maintenanceModeToggle');
+        const webOffToggle = document.getElementById('webOffToggle');
+        const redirectUrlInput = document.getElementById('redirectUrl');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const settingsMessage = document.getElementById('settingsMessage');
+
+        /**
+         * Loads system settings from Firebase and updates the UI.
+         */
+        async function loadSettings() {
+            try {
+                const snapshot = await get(settingsRef);
+                if (snapshot.exists()) {
+                    const settings = snapshot.val();
+                    maintenanceModeToggle.checked = settings.maintenanceMode || false;
+                    webOffToggle.checked = settings.webOff || false;
+                    redirectUrlInput.value = settings.redirectUrl || '';
+                }
+            } catch (error) {
+                console.error("Error loading settings:", error);
+                openCustomModal('error', 'Settings Load Error', 'Failed to load settings: ' + error.message);
+            }
+        }
+
+        saveSettingsBtn.addEventListener('click', async () => {
+            const settings = {
+                maintenanceMode: maintenanceModeToggle.checked,
+                webOff: webOffToggle.checked,
+                redirectUrl: redirectUrlInput.value.trim()
+            };
+
+            try {
+                await set(settingsRef, settings);
+                openCustomModal('success', 'Settings Saved', 'System settings updated successfully!');
+                await logAction('Web Settings Updated', { settings: settings });
+            } catch (error) {
+                console.error("Error saving settings:", error);
+                openCustomModal('error', 'Settings Save Failed', 'Failed to save settings: ' + error.message);
+            }
+        });
+
+        // --- History Management Functions ---
+        const historyListContainer = document.getElementById('historyListContainer');
+        const historySearchInput = document.getElementById('historySearch');
+
+        /**
+         * Renders the action history log from Firebase, applying search filter and sorting.
+         */
+        window.renderHistory = async function() {
+            historyListContainer.innerHTML = '';
+            const query = historySearchInput.value.toLowerCase();
+            try {
+                const snapshot = await get(historyRef);
+                if (!snapshot.exists() || Object.keys(snapshot.val()).length === 0) {
+                    historyListContainer.innerHTML = '<div class="text-center text-gray-500 py-6 text-lg col-span-full">No history entries found.</div>';
+                    return;
+                }
+                const historyEntries = [];
+                snapshot.forEach(childSnapshot => {
+                    historyEntries.push(childSnapshot.val());
+                });
+
+                // Sort history entries by timestamp in descending order (newest first)
+                historyEntries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+                let foundEntries = false;
+                historyEntries.forEach(entry => {
+                    const timestamp = new Date(entry.timestamp).toLocaleString();
+                    const action = entry.action;
+                    // Stringify details safely; use an empty object if details are null/undefined
+                    const details = JSON.stringify(entry.details || {}, null, 2);
+
+                    // Simple search filter
+                    if (action.toLowerCase().includes(query) || details.toLowerCase().includes(query)) {
+                        foundEntries = true;
+                        historyListContainer.innerHTML += `
+                            <div class="history-item-card">
+                                <p><span class="action-type">${action}</span></p>
+                                <pre>${details}</pre>
+                                <p class="timestamp">${timestamp}</p>
+                            </div>
+                        `;
+                    }
+                });
+
+                if (!foundEntries) {
+                    historyListContainer.innerHTML = '<div class="text-center text-gray-500 py-6 text-lg col-span-full">No matching history entries found.</div>';
+                }
+
+            } catch (error) {
+                console.error("Error rendering history:", error);
+                openCustomModal('error', 'History Error', 'Failed to load history: ' + error.message);
+            }
+        };
+
+        // --- Advanced Tools Functions (New) ---
+
+        /**
+         * Toggles the active status of all access keys in the database.
+         */
+        window.toggleAllAccessKeys = async function() {
+            try {
+                const snapshot = await get(accessKeysRef);
+                if (!snapshot.exists()) {
+                    openCustomModal('info', 'No Keys Found', 'There are no access keys to toggle.');
+                    return;
+                }
+
+                const updates = {};
+                let currentlyActiveCount = 0;
+                let currentlyInactiveCount = 0;
+
+                snapshot.forEach(childSnapshot => {
+                    const key = childSnapshot.key;
+                    const isActive = childSnapshot.val().active !== false;
+                    if (isActive) {
+                        currentlyActiveCount++;
+                    } else {
+                        currentlyInactiveCount++;
+                    }
+                });
+
+                // Determine the new state: if most are active, deactivate; else, activate
+                const newState = currentlyActiveCount > currentlyInactiveCount ? false : true; // false for deactivate, true for activate
+                const actionText = newState ? 'activated' : 'deactivated';
+
+                snapshot.forEach(childSnapshot => {
+                    const key = childSnapshot.key;
+                    updates[key + '/active'] = newState;
+                });
+
+                await update(accessKeysRef, updates);
+                openCustomModal('success', 'Global Key Status Toggled', `All access keys have been ${actionText} successfully.`);
+                renderAccessKeys();
+                await logAction(`Global Access Key Status Toggled to ${actionText.toUpperCase()}`, { newState: newState, affectedKeys: Object.keys(updates).length });
+            } catch (error) {
+                console.error("Error toggling all access keys:", error);
+                openCustomModal('error', 'Global Toggle Failed', 'Failed to toggle all access keys: ' + error.message);
+            }
+        };
+
+        /**
+         * Clears all expired access keys from the database.
+         */
+        window.clearExpiredAccessKeys = async function() {
+            try {
+                const snapshot = await get(accessKeysRef);
+                if (!snapshot.exists()) {
+                    openCustomModal('info', 'No Keys Found', 'There are no access keys to clear.');
+                    return;
+                }
+
+                const now = Date.now();
+                const keysToDelete = [];
+                snapshot.forEach(childSnapshot => {
+                    const key = childSnapshot.key;
+                    const data = childSnapshot.val();
+                    if (data.expiry < now) {
+                        keysToDelete.push(key);
+                    }
+                });
+
+                if (keysToDelete.length === 0) {
+                    openCustomModal('info', 'No Expired Keys', 'No expired access keys found to clear.');
+                    return;
+                }
+
+                const deletePromises = keysToDelete.map(key => remove(child(accessKeysRef, key)));
+                await Promise.all(deletePromises);
+
+                openCustomModal('success', 'Expired Keys Cleared', `${keysToDelete.length} expired access key(s) cleared successfully.`);
+                renderAccessKeys();
+                await logAction('Expired Access Keys Cleared', { count: keysToDelete.length, deletedKeys: keysToDelete });
+            } catch (error) {
+                console.error("Error clearing expired keys:", error);
+                openCustomModal('error', 'Clear Failed', 'Failed to clear expired keys: ' + error.message);
+            }
+        };
+
+        /**
+         * Resets passwords for all reseller accounts to new random strings.
+         */
+        window.resetAllResellerPasswords = async function() {
+            try {
+                const snapshot = await get(resellersRef);
+                if (!snapshot.exists()) {
+                    openCustomModal('info', 'No Resellers Found', 'No reseller accounts found to reset passwords for.');
+                    return;
+                }
+
+                const updates = {};
+                const affectedResellers = [];
+                snapshot.forEach(childSnapshot => {
+                    const resellerId = childSnapshot.key;
+                    const newRandomPassword = Math.random().toString(36).substring(2, 12); // Generate random password
+                    updates[resellerId + '/password'] = newRandomPassword;
+                    affectedResellers.push({ id: resellerId, newPassword: newRandomPassword });
+                });
+
+                await update(resellersRef, updates);
+                let message = `Passwords for ${affectedResellers.length} reseller account(s) have been reset to new random values.`;
+                message += `<br><br><div class="text-left font-mono text-sm">`;
+                affectedResellers.forEach(reseller => {
+                    message += `<b>${reseller.id}:</b> ${reseller.newPassword}<br>`;
+                });
+                message += `</div><br><b>IMPORTANT:</b> Please communicate these new passwords to your resellers securely.`;
+
+                openCustomModal('success', 'Reseller Passwords Reset', message);
+                renderResellers();
+                await logAction('All Reseller Passwords Reset', { count: affectedResellers.length, details: affectedResellers.map(r => ({ id: r.id, newPassword: r.newPassword.substring(0, 3) + '...' })) }); // Log partial password
+            } catch (error) {
+                console.error("Error resetting all reseller passwords:", error);
+                openCustomModal('error', 'Reset Failed', 'Failed to reset all reseller passwords: ' + error.message);
+            }
+        };
+
+        /**
+         * Clears all entries from the history log.
+         */
+        window.clearAllHistory = async function() {
+            try {
+                await remove(historyRef);
+                openCustomModal('success', 'History Cleared', 'All action history logs have been cleared successfully.');
+                renderHistory();
+                await logAction('All History Cleared', {});
+            } catch (error) {
+                console.error("Error clearing all history:", error);
+                openCustomModal('error', 'Clear History Failed', 'Failed to clear all history: ' + error.message);
+            }
+        };
+
+    </script>
+</body>
+</html>
