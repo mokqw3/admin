@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,15 +10,76 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Google Fonts - Inter for a modern look -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Firebase SDKs for app and database functionality -->
     <script type="module" src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
     <script type="module" src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
     <style>
-        /* General Styles for premium feel (Pink & White Theme) */
+        /* CSS Variables for Light Mode (Default) */
+        :root {
+            --bg-primary: #f0f4f8;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --card-shadow: rgba(0, 0, 0, 0.08);
+            --card-shadow-hover: rgba(0, 0, 0, 0.15);
+            --sidebar-bg: #ffffff;
+            --sidebar-link-color: #4a5568;
+            --sidebar-link-hover-bg: #fce7f6;
+            --sidebar-link-hover-color: #db2777;
+            --sidebar-link-hover-shadow: rgba(236, 72, 153, 0.1);
+            --input-bg: #ffffff;
+            --input-border: #cbd5e0;
+            --input-text: #2d3748;
+            --input-readonly-bg: #f0f4f8;
+            --input-focus-shadow: rgba(236, 72, 153, 0.25);
+            --modal-bg: #ffffff;
+            --modal-close-button-color: #a0aec0;
+            --history-pre-bg: #f7fafc;
+            --history-pre-text: #2d3748;
+            --border-light: #edf2f7;
+            --scrollbar-track-bg: #e2e8f0;
+            --scrollbar-thumb-bg: #cbd5e0;
+            --scrollbar-thumb-hover-bg: #a0aec0;
+        }
+
+        /* CSS Variables for Dark Mode */
+        html[data-theme='dark'] {
+            --bg-primary: #1a202c;
+            --text-primary: #e2e8f0;
+            --text-secondary: #a0aec0;
+            --text-muted: #6b7280;
+            --card-bg: #2d3748;
+            --card-border: #4a5568;
+            --card-shadow: rgba(0, 0, 0, 0.3);
+            --card-shadow-hover: rgba(0, 0, 0, 0.4);
+            --sidebar-bg: #2d3748;
+            --sidebar-link-color: #a0aec0;
+            --sidebar-link-hover-bg: #3a475a;
+            --sidebar-link-hover-color: #9fe2bf; /* A cool green/blue for accents */
+            --sidebar-link-hover-shadow: rgba(159, 226, 191, 0.15);
+            --input-bg: #3a475a;
+            --input-border: #6b7280;
+            --input-text: #e2e8f0;
+            --input-readonly-bg: #4a5568;
+            --input-focus-shadow: rgba(159, 226, 191, 0.4); /* Green/blue focus */
+            --modal-bg: #2d3748;
+            --modal-close-button-color: #a0aec0;
+            --history-pre-bg: #3a475a;
+            --history-pre-text: #e2e8f0;
+            --border-light: #4a5568;
+            --scrollbar-track-bg: #2d3748;
+            --scrollbar-thumb-bg: #4a5568;
+            --scrollbar-thumb-hover-bg: #6b7280;
+        }
+
+        /* General Styles for premium feel */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* Very light gray/off-white background */
-            color: #1a202c; /* Dark text for contrast */
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Custom scrollbar for better aesthetics */
@@ -28,73 +89,117 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: #e2e8f0; /* Lighter track */
+            background: var(--scrollbar-track-bg);
+            border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #cbd5e0; /* Gray thumb */
+            background: var(--scrollbar-thumb-bg);
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #a0aec0; /* Darker gray on hover */
+            background: var(--scrollbar-thumb-hover-bg);
         }
 
         /* Custom modal styles for a sleek popup */
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
+            display: none;
+            position: fixed;
+            z-index: 1000;
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.5); /* Semi-transparent overlay */
-            justify-content: center; /* Center horizontally */
-            align-items: center; /* Center vertically */
-            backdrop-filter: blur(5px); /* Blurry background */
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+            transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
+            opacity: 0;
+        }
+        .modal.show {
+            opacity: 1;
         }
         .modal-content {
-            background-color: #ffffff; /* White background for modal */
-            margin: auto;
+            background-color: var(--modal-bg);
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 15px 40px var(--card-shadow);
             width: 90%;
-            max-width: 500px;
+            max-width: 550px;
             position: relative;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--card-border);
+            transform: translateY(20px) scale(0.95);
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out, background-color 0.3s ease, border-color 0.3s ease;
+            opacity: 0;
+        }
+        .modal.show .modal-content {
+            transform: translateY(0) scale(1);
+            opacity: 1;
         }
         .close-button {
             position: absolute;
-            top: 15px;
-            right: 25px;
-            font-size: 30px;
+            top: 18px;
+            right: 28px;
+            font-size: 32px;
             font-weight: bold;
             cursor: pointer;
-            color: #a0aec0; /* Lighter gray for close button */
-            transition: color 0.2s ease-in-out;
+            color: var(--modal-close-button-color);
+            transition: color 0.2s ease-in-out, transform 0.1s ease-in-out;
         }
         .close-button:hover,
         .close-button:focus {
-            color: #333; /* Darker on hover */
+            color: var(--text-primary);
+            transform: rotate(90deg);
             text-decoration: none;
         }
 
-        /* Key Box Styling - Modern Cards */
-        .key-box {
-            background-color: #ffffff; /* White card background */
-            border: 1px solid #e2e8f0;
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        /* Card Styles */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 2.2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px var(--card-shadow);
+            margin-bottom: 2rem;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.3s ease, border-color 0.3s ease;
         }
-        .key-box:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        .card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 12px 35px var(--card-shadow-hover);
+        }
+        .card-title {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.8rem;
+            display: flex;
+            align-items: center;
+            padding-bottom: 0.7rem;
+            border-bottom: 1px solid var(--border-light);
+            transition: color 0.3s ease, border-color 0.3s ease;
+        }
+        .card-title .icon {
+            margin-right: 1.2rem;
+            color: #ec4899; /* Pink-500, kept constant for branding */
+            font-size: 1.7rem;
+        }
+
+        /* Key Box Specific Styles */
+        .key-box, .reseller-item-card, .history-item-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 25px var(--card-shadow);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .key-box:hover, .reseller-item-card:hover, .history-item-card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 12px 35px var(--card-shadow-hover);
         }
         .key-box .flex-row {
             display: flex;
@@ -108,484 +213,313 @@
         .key-box button:active {
             transform: scale(0.95);
         }
-        .key-box .expired {
-            color: #ef4444; /* red-500 */
-            font-weight: 600;
-        }
-        .key-box .valid {
-            color: #22c55e; /* green-500 */
-            font-weight: 600;
-        }
-        .key-box .status-active {
-            color: #22c55e; /* green-500 */
-            font-weight: 600;
-        }
-        .key-box .status-inactive {
-            color: #ef4444; /* red-500 */
-            font-weight: 600;
-        }
-        .key-box .device-bound {
-            color: #3b82f6; /* blue-500 */
-            font-weight: 600;
-        }
-        .key-box .device-unbound {
-            color: #6b7280; /* gray-500 */
-            font-weight: normal;
-        }
+        .key-box .expired { color: #ef4444; font-weight: 600; }
+        .key-box .valid { color: #22c55e; font-weight: 600; }
+        .key-box .status-active { color: #22c55e; font-weight: 600; }
+        .key-box .status-inactive { color: #ef4444; font-weight: 600; }
+        .key-box .device-bound { color: #3b82f6; font-weight: 600; }
+        .key-box .device-unbound { color: var(--text-secondary); font-weight: normal; } /* Uses theme variable */
 
-        /* Sidebar Styles - Sleek and functional */
+
+        /* Sidebar Styles */
         .sidebar {
-            width: 280px; /* Wider sidebar for better content display */
-            background-color: #ffffff; /* White background */
-            color: #4a5568; /* Dark gray text */
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-link-color);
             padding: 2rem 1.5rem;
-            box-shadow: 3px 0 10px rgba(0,0,0,0.1);
+            box-shadow: 3px 0 15px rgba(0,0,0,0.12);
             position: fixed;
             height: 100%;
             overflow-y: auto;
             transform: translateX(-100%);
-            transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+            transition: transform 0.3s ease-in-out, width 0.3s ease-in-out, background-color 0.3s ease, color 0.3s ease;
             z-index: 999;
-            border-right: 1px solid #e2e8f0;
+            border-right: 1px solid var(--card-border);
         }
-        .sidebar.active { /* This class means compact on desktop, open on mobile */
-            transform: translateX(0);
-        }
+        .sidebar.active { transform: translateX(0); } /* For mobile open state */
 
-        @media (min-width: 769px) { /* Desktop styles */
-            .sidebar.active {
-                width: 80px; /* Compacted width */
-            }
+        @media (min-width: 769px) {
+            .sidebar { transform: translateX(0); } /* Always visible on desktop */
+            .sidebar.compact { width: 80px; } /* Desktop compact state */
         }
-        @media (max-width: 768px) { /* Mobile styles */
-            .sidebar.active {
-                width: 100%; /* Full width when active (open) on mobile */
-            }
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; }
+            .sidebar.active { box-shadow: none; border-right: none; }
         }
 
         .sidebar a {
             display: flex;
             align-items: center;
             padding: 1rem 1.2rem;
-            margin-bottom: 0.6rem;
-            border-radius: 8px;
-            transition: background-color 0.2s, color 0.2s;
-            color: #4a5568; /* Dark gray */
+            margin-bottom: 0.8rem;
+            border-radius: 10px;
+            transition: background-color 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s;
+            color: var(--sidebar-link-color);
             font-weight: 500;
             text-decoration: none;
         }
         .sidebar a:hover, .sidebar a.active {
-            background-color: #fce7f6; /* Pink-100 */
-            color: #db2777; /* Pink-600 */
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            background-color: var(--sidebar-link-hover-bg);
+            color: var(--sidebar-link-hover-color);
+            box-shadow: 0 4px 12px var(--sidebar-link-hover-shadow);
+            transform: translateX(5px);
         }
         .sidebar a .fas {
-            margin-right: 1rem;
-            font-size: 1.2rem;
-            color: #a0aec0; /* Default icon color */
+            margin-right: 1.1rem;
+            font-size: 1.3rem;
+            color: var(--text-muted); /* Uses theme variable */
             transition: color 0.2s;
         }
         .sidebar a:hover .fas, .sidebar a.active .fas {
-            color: #db2777; /* Pink-600 for active/hover icons */
+            color: var(--sidebar-link-hover-color);
         }
 
-        /* Hide text only when sidebar is compact (on desktop) */
         @media (min-width: 769px) {
-            .sidebar.active a span {
-                display: none;
-            }
-            .sidebar.active a .fas { /* Center icon when text is hidden */
-                margin-right: 0;
-                justify-content: center;
-                width: 100%;
-            }
+            .sidebar.compact a span { display: none; }
+            .sidebar.compact a .fas { margin-right: 0; justify-content: center; width: 100%; }
         }
-        /* Ensure text is always visible on mobile when sidebar is open */
         @media (max-width: 768px) {
-            .sidebar.active a span {
-                display: inline-block; /* Ensure it's shown */
-            }
-            .sidebar.active a .fas { /* Re-add margin for icon on mobile when active (open) */
-                margin-right: 1rem;
-                justify-content: flex-start; /* Align left */
-            }
+            .sidebar.active a span { display: inline-block; }
+            .sidebar.active a .fas { margin-right: 1rem; justify-content: flex-start; }
         }
 
-
-        /* Main Content Area - Expands with sidebar toggle */
+        /* Main Content Area */
         .main-content {
             flex-grow: 1;
             padding: 2.5rem;
-            background-color: #f8fafc; /* Very light gray */
-            margin-left: 0;
-            transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
-            width: 100%;
-        }
-        body.sidebar-open .main-content {
-            margin-left: 280px; /* Adjust for full sidebar width */
+            background-color: var(--bg-primary);
+            margin-left: 280px; /* Default for desktop full sidebar */
+            transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out, background-color 0.3s ease;
             width: calc(100% - 280px);
         }
-        body.sidebar-open.sidebar-compact .main-content {
-            margin-left: 80px; /* Adjust for compact sidebar width */
+        @media (max-width: 768px) {
+            .main-content { margin-left: 0; width: 100%; padding: 1.5rem; }
+        }
+        .body-sidebar-compact .main-content {
+            margin-left: 80px;
             width: calc(100% - 80px);
         }
+        .body-sidebar-closed-mobile .main-content {
+            margin-left: 0;
+            width: 100%;
+        }
 
-        /* Sidebar Toggle Button - Premium Look */
+        /* Sidebar Toggle Button */
         .sidebar-toggle {
             position: fixed;
             top: 25px;
             left: 25px;
             z-index: 1001;
-            background-color: #ec4899; /* Pink-500 */
+            background: linear-gradient(45deg, #ec4899, #db2777);
             color: white;
             border-radius: 50%;
-            width: 45px;
-            height: 45px;
+            width: 48px;
+            height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(236, 72, 153, 0.3);
-            transition: left 0.3s ease-in-out, background-color 0.2s ease-in-out;
+            box-shadow: 0 5px 15px rgba(236, 72, 153, 0.4);
+            transition: left 0.3s ease-in-out, background 0.3s ease-in-out, box-shadow 0.3s ease-in-out, transform 0.2s ease-in-out;
         }
         .sidebar-toggle:hover {
-            background-color: #db2777; /* Pink-600 */
+            background: linear-gradient(45deg, #db2777, #ec4899);
+            box-shadow: 0 8px 20px rgba(236, 72, 153, 0.5);
+            transform: scale(1.05);
         }
-        body.sidebar-open .sidebar-toggle {
-            left: 305px; /* Move button to the right of full sidebar */
+        @media (min-width: 769px) {
+            .sidebar-toggle { left: 25px; }
+            .body-sidebar-compact .sidebar-toggle { left: 105px; }
         }
-        body.sidebar-open.sidebar-compact .sidebar-toggle {
-            left: 105px; /* Move button to the right of compact sidebar */
+        @media (max-width: 768px) {
+            .sidebar-toggle { left: 15px; }
+            .body-sidebar-open-mobile .sidebar-toggle { left: calc(100% - 65px); transform: rotate(0deg); }
+            .sidebar-toggle .fa-bars { transition: transform 0.3s ease; }
+            .body-sidebar-open-mobile .sidebar-toggle .fa-bars { transform: rotate(90deg); }
         }
 
-        /* Card components */
-        .card {
-            background-color: #ffffff; /* White card background */
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-            margin-bottom: 2rem;
-            border: 1px solid #e2e8f0;
-        }
-        .card-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #1a202c; /* Dark text */
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #edf2f7; /* Light gray border */
-        }
-        .card-title .icon {
-            margin-right: 1rem;
-            color: #ec4899; /* Pink-500 for titles */
-            font-size: 1.6rem;
-        }
+        /* Buttons */
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0.8rem 1.8rem;
-            border-radius: 8px;
+            padding: 0.9rem 2rem;
+            border-radius: 10px;
             font-weight: 600;
-            transition: background-color 0.2s, transform 0.1s ease-in-out, box-shadow 0.2s;
+            transition: background-color 0.2s, transform 0.1s ease-in-out, box-shadow 0.2s, background-image 0.3s ease;
             cursor: pointer;
             border: none;
             text-decoration: none;
-        }
-        .btn:active {
-            transform: scale(0.98);
-        }
-        .btn-primary {
-            background-color: #ec4899; /* Pink-500 */
-            color: #ffffff;
-            box-shadow: 0 4px 10px rgba(236, 72, 153, 0.2);
-        }
-        .btn-primary:hover {
-            background-color: #db2777; /* Pink-600 */
-            box-shadow: 0 6px 15px rgba(236, 72, 153, 0.3);
-        }
-        .btn-danger {
-            background-color: #ef4444; /* red-500 */
-            color: #ffffff;
-            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
-        }
-        .btn-danger:hover {
-            background-color: #dc2626; /* red-600 */
-            box-shadow: 0 6px 15px rgba(239, 68, 68, 0.3);
-        }
-        .btn-warning {
-            background-color: #fbbf24; /* yellow-400 */
-            color: #1a202c; /* Dark text on yellow */
-            box-shadow: 0 4px 10px rgba(251, 191, 36, 0.2);
-        }
-        .btn-warning:hover {
-            background-color: #f59e0b; /* yellow-500 */
-            box-shadow: 0 6px 15px rgba(251, 191, 36, 0.3);
-        }
-        .btn-success {
-            background-color: #22c55e; /* green-500 */
-            color: #ffffff;
-            box-shadow: 0 4px 10px rgba(34, 197, 94, 0.2);
-        }
-        .btn-success:hover {
-            background-color: #16a34a; /* green-600 */
-            box-shadow: 0 6px 15px rgba(34, 197, 94, 0.3);
-        }
-        .btn-ghost {
-            background-color: transparent;
-            color: #ec4899; /* Pink-500 */
-            border: 1px solid #ec4899;
-        }
-        .btn-ghost:hover {
-            background-color: #ec4899;
-            color: #ffffff;
-        }
-
-        .btn .icon {
-            margin-right: 0.6rem;
-        }
-        .message {
-            margin-top: 1.5rem;
-            padding: 1rem 1.25rem;
-            border-radius: 8px;
             font-size: 0.95rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
         }
-        .message .icon {
-            margin-right: 0.75rem;
-            font-size: 1.1rem;
+        .btn:active { transform: scale(0.96); }
+        .btn-primary { background: linear-gradient(90deg, #ec4899, #db2777); color: #ffffff; box-shadow: 0 5px 15px rgba(236, 72, 153, 0.3); }
+        .btn-primary:hover { background: linear-gradient(90deg, #db2777, #ec4899); box-shadow: 0 8px 20px rgba(236, 72, 153, 0.4); }
+        .btn-danger { background-color: #ef4444; color: #ffffff; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3); }
+        .btn-danger:hover { background-color: #dc2626; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); }
+        .btn-warning { background-color: #fbbf24; color: var(--text-primary); box-shadow: 0 5px 15px rgba(251, 191, 36, 0.3); } /* Text color adjusts */
+        .btn-warning:hover { background-color: #f59e0b; box-shadow: 0 8px 20px rgba(251, 191, 36, 0.4); }
+        .btn-success { background-color: #22c55e; color: #ffffff; box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3); }
+        .btn-success:hover { background-color: #16a34a; box-shadow: 0 8px 20px rgba(34, 197, 94, 0.4); }
+        .btn-info { /* New style for info button */
+            background-color: #3b82f6; /* blue-500 */
+            color: #ffffff;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
         }
-        .message.success {
-            background-color: #d1fae5; /* green-100 */
-            color: #10b981; /* green-600 */
-            border: 1px solid #34d399; /* green-400 */
+        .btn-info:hover {
+            background-color: #2563eb; /* blue-600 */
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
         }
-        .message.error {
-            background-color: #fee2e2; /* red-100 */
-            color: #ef4444; /* red-500 */
-            border: 1px solid #fca5a5; /* red-300 */
+        html[data-theme='dark'] .btn-info { /* Dark mode adjustment for info button */
+            background-color: #60a5fa; /* blue-400 */
+            color: #1a202c; /* dark text on light blue */
+            box-shadow: 0 5px 15px rgba(96, 165, 250, 0.3);
         }
-        .message.info {
-            background-color: #e0f2fe; /* blue-100 */
-            color: #3b82f6; /* blue-500 */
-            border: 1px solid #93c5fd; /* blue-300 */
+        html[data-theme='dark'] .btn-info:hover {
+            background-color: #3b82f6; /* blue-500 */
+            box-shadow: 0 8px 20px rgba(96, 165, 250, 0.4);
         }
-        .input-group {
-            margin-bottom: 1.25rem;
-            flex-grow: 1;
-        }
+        .btn-ghost { background-color: transparent; color: #ec4899; border: 1px solid #ec4899; }
+        .btn-ghost:hover { background-color: #ec4899; color: #ffffff; }
+        .btn .icon { margin-right: 0.8rem; font-size: 1.1rem; }
+        .message { margin-top: 1.5rem; padding: 1rem 1.25rem; border-radius: 10px; font-size: 0.95rem; font-weight: 500; display: flex; align-items: center; }
+        .message .icon { margin-right: 0.75rem; font-size: 1.1rem; }
+        .message.success { background-color: #d1fae5; color: #10b981; border: 1px solid #34d399; }
+        .message.error { background-color: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; }
+        .message.info { background-color: #e0f2fe; color: #3b82f6; border: 1px solid #93c5fd; }
+        .input-group { margin-bottom: 1.25rem; flex-grow: 1; }
         .input-group label {
             display: block;
             font-size: 0.9rem;
             font-weight: 500;
-            color: #4a5568; /* Dark gray for labels */
+            color: var(--text-secondary);
             margin-bottom: 0.6rem;
+            transition: color 0.3s ease;
         }
-        .input-wrapper {
-            position: relative;
-        }
+        .input-wrapper { position: relative; }
         .input-wrapper .icon {
             position: absolute;
             left: 0.9rem;
             top: 50%;
             transform: translateY(-50%);
-            color: #a0aec0; /* Gray for input icons */
+            color: var(--text-muted);
             font-size: 1rem;
+            transition: color 0.3s ease;
         }
         .input-wrapper input, .input-group select {
-            padding-left: 2.8rem; /* Space for icon */
+            padding-left: 2.8rem;
             width: 100%;
-            padding-top: 0.8rem;
-            padding-bottom: 0.8rem;
-            border: 1px solid #cbd5e0; /* Light gray border */
-            background-color: #ffffff; /* White input background */
-            color: #1a202c; /* Dark text */
-            border-radius: 8px;
+            padding-top: 0.9rem;
+            padding-bottom: 0.9rem;
+            border: 1px solid var(--input-border);
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border-radius: 10px;
             font-size: 0.95rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s ease, color 0.3s ease;
         }
         .input-wrapper input:focus, .input-group select:focus {
             outline: none;
-            border-color: #ec4899; /* Pink-500 focus */
-            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.3); /* Focus ring */
+            border-color: #ec4899;
+            box-shadow: 0 0 0 4px var(--input-focus-shadow);
         }
         .input-group select {
-            padding-left: 1rem; /* Less padding for select */
-            appearance: none; /* Remove default arrow */
+            padding-left: 1rem;
+            appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23a0aec0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 0.75rem center;
             background-size: 1rem;
         }
         .input-wrapper input[readonly] {
-            background-color: #f0f4f8; /* Very light gray for readonly */
+            background-color: var(--input-readonly-bg);
             cursor: not-allowed;
-            color: #4a5568; /* Darker gray for readonly text */
+            color: var(--text-secondary);
         }
-
-        .flex-row {
-            display: flex;
-            gap: 1.25rem;
-            align-items: flex-end;
-        }
+        .flex-row { display: flex; gap: 1.25rem; align-items: flex-end; }
 
         /* Reseller Card Specific Styles */
         .reseller-card-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1.5rem;
-        }
-        .reseller-item-card {
-            background-color: #ffffff;
-            padding: 1.8rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 1px solid #e2e8f0;
-            position: relative;
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
-        .reseller-item-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-        .reseller-item-card .reseller-info p {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.8rem;
-            font-size: 0.95rem;
-            color: #4a5568; /* Dark gray for info text */
-        }
-        .reseller-item-card .reseller-info p .fas {
-            margin-right: 0.8rem;
-            color: #ec4899; /* Pink-500 for info icons */
-            font-size: 1.15rem;
-        }
-        .reseller-item-card .reseller-info p .font-semibold {
-            color: #1a202c; /* Dark text for important values */
-        }
-        .reseller-item-card .reseller-info p .status-active {
-            color: #22c55e;
-            font-weight: 600;
-        }
-        .reseller-item-card .reseller-info p .status-inactive {
-            color: #ef4444;
-            font-weight: 600;
-        }
-        .reseller-item-card .action-buttons-bottom {
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.75rem;
-            margin-top: 1.5rem;
-            border-top: 1px solid #edf2f7;
-            padding-top: 1.25rem;
-        }
-        .reseller-item-card .action-buttons-bottom button {
-            padding: 0.6rem 1.2rem;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            transition: background-color 0.2s, transform 0.1s;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            border: none;
-        }
-        .reseller-item-card .action-buttons-bottom button:active {
-            transform: scale(0.95);
-        }
-        .reseller-item-card .action-buttons-bottom button.delete-btn {
-            background-color: #ef4444;
-            color: white;
-        }
-        .reseller-item-card .action-buttons-bottom button.delete-btn:hover {
-            background-color: #dc2626;
-        }
-        .reseller-item-card .action-buttons-bottom button.toggle-btn-deactivate {
-            background-color: #fbbf24;
-            color: #1a202c;
-        }
-        .reseller-item-card .action-buttons-bottom button.toggle-btn-deactivate:hover {
-            background-color: #f59e0b;
-        }
-        .reseller-item-card .action-buttons-bottom button.toggle-btn-activate {
-            background-color: #22c55e;
-            color: #ffffff;
-        }
-        .reseller-item-card .action-buttons-bottom button.toggle-btn-activate:hover {
-            background-color: #16a34a;
-        }
-        .reseller-item-card .action-buttons-bottom button.edit-btn {
-            background-color: #ec4899; /* Pink-500 */
-            color: white;
-        }
-        .reseller-item-card .action-buttons-bottom button.edit-btn:hover {
-            background-color: #db2777; /* Pink-600 */
-        }
-
-        /* History Card Specific Styles */
-        .history-card-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 1.5rem;
             margin-top: 1.5rem;
         }
-        .history-item-card {
-            background-color: #ffffff;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 1px solid #e2e8f0;
+        .reseller-item-card .reseller-info p {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.9rem;
+            font-size: 0.98rem;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+        .reseller-item-card .reseller-info p .fas {
+            margin-right: 0.9rem;
+            color: #ec4899;
+            font-size: 1.25rem;
+        }
+        .reseller-item-card .reseller-info p .font-semibold { color: var(--text-primary); transition: color 0.3s ease; }
+        .reseller-item-card .action-buttons-bottom {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            margin-top: 1.8rem;
+            border-top: 1px solid var(--border-light);
+            padding-top: 1.4rem;
+            transition: border-color 0.3s ease;
+        }
+        .reseller-item-card .action-buttons-bottom button {
+            padding: 0.7rem 1.4rem;
+            border-radius: 8px;
             font-size: 0.9rem;
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        .history-item-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        .reseller-item-card .action-buttons-bottom button:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+        /* History Card Specific Styles */
+        .history-card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.8rem;
+            margin-top: 1.8rem;
         }
+        .history-item-card { padding: 1.8rem; }
         .history-item-card p {
-            margin-bottom: 0.6rem;
-            color: #4a5568; /* Dark gray for info text */
+            margin-bottom: 0.7rem;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
         }
         .history-item-card .timestamp {
-            font-size: 0.8rem;
-            color: #718096; /* Medium gray */
+            font-size: 0.85rem;
+            color: var(--text-muted);
             text-align: right;
-            margin-top: 1rem;
-            border-top: 1px dashed #e2e8f0;
-            padding-top: 0.8rem;
+            margin-top: 1.2rem;
+            border-top: 1px dashed var(--card-border); /* Uses card border for consistency */
+            padding-top: 1rem;
+            transition: border-color 0.3s ease;
         }
         .history-item-card .action-type {
             font-weight: 700;
-            color: #ec4899; /* Pink-500 for action type */
-            font-size: 1.05rem;
+            color: #ec4899;
+            font-size: 1.1rem;
         }
         .history-item-card pre {
-            background-color: #f7fafc; /* Very light gray for code blocks */
-            border: 1px solid #edf2f7;
-            border-radius: 6px;
-            padding: 0.8rem;
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-            font-size: 0.85rem;
-            color: #2d3748; /* Darker gray for code text */
-            overflow-x: auto;
+            background-color: var(--history-pre-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.9rem;
+            color: var(--history-pre-text);
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Switch styles for settings - Modern Toggle */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 48px;
-            height: 28px;
-        }
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+        /* Switch styles for settings */
+        .switch { position: relative; display: inline-block; width: 52px; height: 30px; }
         .slider {
             position: absolute;
             cursor: pointer;
@@ -593,143 +527,115 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #cbd5e0; /* Off state gray */
+            background-color: var(--input-border); /* Adjusts with theme */
             transition: .4s;
-            border-radius: 28px;
-            border: 1px solid #a0aec0;
+            border-radius: 30px;
+            border: 1px solid var(--text-muted); /* Adjusts with theme */
         }
         .slider:before {
             position: absolute;
             content: "";
-            height: 20px;
-            width: 20px;
+            height: 22px;
+            width: 22px;
             left: 4px;
-            bottom: 3px;
+            bottom: 4px;
             background-color: white;
             transition: .4s;
             border-radius: 50%;
         }
-        input:checked + .slider {
-            background-color: #ec4899; /* Pink-500 for active switch */
-            border-color: #db2777; /* Pink-600 */
-        }
-        input:focus + .slider {
-            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.3);
-        }
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
+        input:checked + .slider { background-color: #ec4899; border-color: #db2777; }
+        input:focus + .slider { box-shadow: 0 0 0 4px var(--input-focus-shadow); }
+        input:checked + .slider:before { transform: translateX(22px); }
 
         /* Admin Panel Specific UI tweaks */
         .admin-logo {
-            width: 70px;
-            height: 70px;
+            width: 75px;
+            height: 75px;
             border-radius: 50%;
             object-fit: cover;
             margin: 0 auto 1.8rem;
             display: block;
-            border: 3px solid #ec4899; /* Pink-500 border */
-            box-shadow: 0 0 0 5px rgba(236, 72, 153, 0.2);
+            border: 4px solid #ec4899;
+            box-shadow: 0 0 0 6px rgba(236, 72, 153, 0.2);
         }
         .admin-title {
             text-align: center;
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
-            color: #ec4899; /* Pink-500 */
-            margin-bottom: 2.5rem;
+            color: #ec4899;
+            margin-bottom: 3rem;
             text-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
         }
         .sidebar-close-btn {
             position: absolute;
             top: 15px;
             right: 15px;
-            color: #a0aec0; /* Gray for close button */
-            font-size: 1.8rem;
+            color: var(--text-muted);
+            font-size: 2rem;
             cursor: pointer;
             transition: color 0.2s ease-in-out;
         }
-        .sidebar-close-btn:hover {
-            color: #1a202c; /* Darker on hover */
-        }
+        .sidebar-close-btn:hover { color: var(--text-primary); }
         .text-gradient {
-            background: linear-gradient(to right, #ec4899, #db2777); /* Pink gradient */
+            background: linear-gradient(to right, #ec4899, #db2777);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .key-input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .key-input-group label {
+        .key-input-group label .fas { font-size: 1.1rem; }
+
+        /* Theme Toggle Button specific styles */
+        #themeToggle {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 1000;
+            background: linear-gradient(45deg, #3b82f6, #2563eb); /* Blue gradient */
+            color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: #4a5568; /* Dark gray for labels */
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+            transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
         }
-        .key-input-group label .fas {
-            margin-right: 0.75rem;
-            color: #ec4899; /* Pink-500 for label icons */
+        #themeToggle:hover {
+            background: linear-gradient(45deg, #2563eb, #3b82f6);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);
+            transform: scale(1.1);
+        }
+        #themeToggle .fas {
+            font-size: 1.5rem;
         }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%); /* Start hidden on mobile */
-                padding-top: 5rem; /* Space for toggle button */
-            }
-            .sidebar.active {
-                transform: translateX(0); /* Fully open on mobile */
-                box-shadow: none; /* No shadow when full screen */
-                border-right: none;
-            }
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-                padding: 1.5rem;
-            }
-            body.sidebar-open .main-content,
-            body.sidebar-open.sidebar-compact .main-content { /* These classes are mostly for desktop, but included for safety */
-                margin-left: 0;
-                width: 100%;
-                overflow: hidden;
-            }
-            .sidebar-toggle {
-                left: 15px;
-                top: 15px;
-                background-color: #ec4899; /* Keep it prominent */
-                color: white;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            }
-            body.sidebar-open .sidebar-toggle,
-            body.sidebar-open.sidebar-compact .sidebar-toggle {
-                left: calc(100% - 60px); /* Move toggle to right when sidebar is open */
-                background-color: #ec4899;
-                color: white;
-            }
-            .admin-title {
-                font-size: 1.5rem;
-            }
-            .card-title {
-                font-size: 1.4rem;
-            }
-            .card-title .icon {
-                font-size: 1.4rem;
-            }
+            .main-content { padding: 1.5rem; }
+            .admin-title { font-size: 1.8rem; }
+            .card-title { font-size: 1.6rem; }
+            .card-title .icon { font-size: 1.6rem; }
+            #themeToggle { bottom: 15px; right: 15px; width: 45px; height: 45px; }
+            #themeToggle .fas { font-size: 1.3rem; }
         }
     </style>
 </head>
-<body class="bg-gray-50 flex min-h-screen">
+<body class="flex min-h-screen">
     <!-- Sidebar Toggle Button -->
     <div id="sidebarToggle" class="sidebar-toggle">
         <i class="fas fa-bars"></i>
     </div>
 
+    <!-- Theme Toggle Button -->
+    <div id="themeToggle" class="flex items-center justify-center">
+        <i class="fas fa-moon"></i>
+    </div>
+
     <!-- Sidebar Navigation -->
     <div id="sidebar" class="sidebar">
         <span class="sidebar-close-btn" id="sidebarCloseBtn"><i class="fas fa-times"></i></span>
-        <img src="https://placehold.co/70x70/ec4899/ffffff?text=OX" alt="ORACLE X AI Logo" class="admin-logo">
+        <img src="https://placehold.co/75x75/ec4899/ffffff?text=OX" alt="ORACLE X AI Logo" class="admin-logo">
         <div class="admin-title">ORACLE X AI</div>
         <nav>
             <a href="#" class="sidebar-link active" data-section="keyGeneratorSection">
@@ -756,7 +662,7 @@
 
     <!-- Main Content Area -->
     <div class="main-content">
-        <h1 class="text-4xl font-extrabold text-gray-800 mb-10 pb-4 border-b border-gray-200">
+        <h1 class="text-4xl font-extrabold mb-10 pb-4 border-b border-gray-200" style="color: var(--text-primary); border-color: var(--card-border);">
             <span id="currentSectionTitle" class="text-gradient">Create Access Key</span>
         </h1>
 
@@ -776,6 +682,18 @@
                                 <i class="fas fa-fingerprint icon"></i>
                                 <input type="text" id="key" placeholder="Enter key"
                                     class="w-full">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label for="keyPurpose">
+                                <i class="fas fa-lightbulb"></i> Key Purpose (optional)
+                            </label>
+                            <div class="input-wrapper flex items-center">
+                                <i class="fas fa-lightbulb icon"></i>
+                                <input type="text" id="keyPurpose" placeholder="e.g., For testing mobile app integration" class="w-full flex-grow mr-2">
+                                <button onclick="window.suggestKeyPurposeWithLLM()" class="btn btn-info flex-shrink-0 text-sm py-2 px-3">
+                                    ✨ Suggest
+                                </button>
                             </div>
                         </div>
                         <div class="input-group">
@@ -825,7 +743,7 @@
                 <div class="card lg:col-span-2">
                     <h2 class="card-title flex items-center justify-between">
                         <span><span class="icon fas fa-list-alt"></span>Current Access Keys</span>
-                        <span id="keyCount" class="text-sm text-gray-500">TOTAL KEYS: 0</span>
+                        <span id="keyCount" class="text-sm" style="color: var(--text-muted);">TOTAL KEYS: 0</span>
                     </h2>
                     <div class="input-group">
                         <div class="input-wrapper">
@@ -884,7 +802,7 @@
                 <p id="generateResellerMessage" class="message"></p>
             </div>
 
-            <h3 class="text-3xl font-bold text-gray-800 text-center mt-10 mb-6">
+            <h3 class="text-3xl font-bold text-center mt-10 mb-6" style="color: var(--text-primary);">
                 <span class="text-gradient fas fa-users mr-3"></span>Manage Existing Resellers
             </h3>
             <div id="resellerListContainer" class="reseller-card-container">
@@ -894,7 +812,10 @@
         <!-- Manage History Section -->
         <div id="manageHistorySection" class="content-section hidden">
             <div class="card">
-                <h2 class="card-title"><span class="icon fas fa-history"></span> Action History Log</h2>
+                <h2 class="card-title flex items-center justify-between">
+                    <span><span class="icon fas fa-history"></span> Action History Log</span>
+                    <button onclick="summarizeHistoryWithLLM()" class="btn btn-success text-sm py-2 px-3">✨ Summarize History</button>
+                </h2>
                 <div class="input-group">
                     <div class="input-wrapper">
                         <i class="fas fa-search icon"></i>
@@ -912,16 +833,16 @@
             <div class="card">
                 <h2 class="card-title"><span class="icon fas fa-cogs"></span> System & Web Settings</h2>
                 <div class="input-group mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-3">System Modes</label>
-                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
-                        <span class="text-gray-700">Maintenance Mode</span>
+                    <label class="block text-sm font-medium mb-3" style="color: var(--text-secondary);">System Modes</label>
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b" style="border-color: var(--card-border);">
+                        <span style="color: var(--text-secondary);">Maintenance Mode</span>
                         <label class="switch">
                             <input type="checkbox" id="maintenanceModeToggle">
                             <span class="slider"></span>
                         </label>
                     </div>
-                    <div class="flex justify-between items-center mb-6 pb-2 border-b border-gray-200">
-                        <span class="text-gray-700">Web Off (404 Mode)</span>
+                    <div class="flex justify-between items-center mb-6 pb-2 border-b" style="border-color: var(--card-border);">
+                        <span style="color: var(--text-secondary);">Web Off (404 Mode)</span>
                         <label class="switch">
                             <input type="checkbox" id="webOffToggle">
                             <span class="slider"></span>
@@ -929,7 +850,7 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="redirectUrl" class="block text-sm font-medium text-gray-700 mb-3">Redirect Settings</label>
+                    <label for="redirectUrl" class="block text-sm font-medium mb-3" style="color: var(--text-secondary);">Redirect Settings</label>
                     <div class="input-wrapper">
                         <i class="fas fa-external-link-alt icon"></i>
                         <input type="text" id="redirectUrl" placeholder="Enter redirect URL"
@@ -947,11 +868,11 @@
                 <h2 class="card-title"><span class="icon fas fa-tools"></span> Advanced Management Tools</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Global Key Status Toggle -->
-                    <div class="card bg-gray-50 border-gray-200">
-                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <div class="card" style="background-color: var(--bg-primary); border-color: var(--card-border);">
+                        <h3 class="text-xl font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
                             <i class="fas fa-toggle-on mr-3 text-pink-500"></i>Global Key Status
                         </h3>
-                        <p class="text-gray-600 mb-4">Quickly activate or deactivate all access keys across the system. Use with caution.</p>
+                        <p class="mb-4" style="color: var(--text-secondary);">Quickly activate or deactivate all access keys across the system. Use with caution.</p>
                         <button onclick="window.confirmAction('confirm', 'Toggle All Keys', 'Are you sure you want to toggle the status of ALL access keys?', toggleAllAccessKeys)"
                                 class="btn btn-warning w-full">
                             <i class="fas fa-power-off mr-2"></i>Toggle All Keys Status
@@ -959,11 +880,11 @@
                     </div>
 
                     <!-- Clear Expired Keys -->
-                    <div class="card bg-gray-50 border-gray-200">
-                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <div class="card" style="background-color: var(--bg-primary); border-color: var(--card-border);">
+                        <h3 class="text-xl font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
                             <i class="fas fa-broom mr-3 text-red-500"></i>Clear Expired Keys
                         </h3>
-                        <p class="text-gray-600 mb-4">Remove all expired access keys from the database to clean up old entries.</p>
+                        <p class="mb-4" style="color: var(--text-secondary);">Remove all expired access keys from the database to clean up old entries.</p>
                         <button onclick="window.confirmAction('confirm', 'Clear Expired Keys', 'Are you sure you want to delete ALL EXPIRED access keys? This cannot be undone.', clearExpiredAccessKeys)"
                                 class="btn btn-danger w-full">
                             <i class="fas fa-eraser mr-2"></i>Clear Expired Keys
@@ -971,11 +892,11 @@
                     </div>
 
                     <!-- Reset All Reseller Passwords -->
-                    <div class="card bg-gray-50 border-gray-200">
-                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <div class="card" style="background-color: var(--bg-primary); border-color: var(--card-border);">
+                        <h3 class="text-xl font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
                             <i class="fas fa-sync-alt mr-3 text-yellow-500"></i>Reset All Reseller Passwords
                         </h3>
-                        <p class="text-gray-600 mb-4">Generate new random passwords for all reseller accounts. Resellers will need to be informed.</p>
+                        <p class="mb-4" style="color: var(--text-secondary);">Generate new random passwords for all reseller accounts. Resellers will need to be informed.</p>
                         <button onclick="window.confirmAction('confirm', 'Reset All Reseller Passwords', 'Are you sure you want to reset passwords for ALL resellers? They will receive new random passwords.', resetAllResellerPasswords)"
                                 class="btn btn-warning w-full">
                             <i class="fas fa-key mr-2"></i>Reset All Reseller Passwords
@@ -983,11 +904,11 @@
                     </div>
 
                      <!-- Clear All History -->
-                     <div class="card bg-gray-50 border-gray-200">
-                        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                     <div class="card" style="background-color: var(--bg-primary); border-color: var(--card-border);">
+                        <h3 class="text-xl font-semibold mb-4 flex items-center" style="color: var(--text-primary);">
                             <i class="fas fa-history mr-3 text-purple-500"></i>Clear All History
                         </h3>
-                        <p class="text-gray-600 mb-4">Permanently delete all action history logs. This action cannot be undone.</p>
+                        <p class="mb-4" style="color: var(--text-secondary);">Permanently delete all action history logs. This action cannot be undone.</p>
                         <button onclick="window.confirmAction('confirm', 'Clear All History', 'Are you sure you want to clear ALL history logs? This cannot be undone.', clearAllHistory)"
                                 class="btn btn-danger w-full">
                             <i class="fas fa-trash-alt mr-2"></i>Clear All History
@@ -1004,8 +925,8 @@
         <div class="modal-content text-center">
             <span class="close-button" onclick="window.closeCustomModal()">&times;</span>
             <div id="modalIcon" class="text-4xl mb-4"></div>
-            <h3 id="modalTitle" class="text-xl font-bold text-gray-800 mb-2"></h3>
-            <p id="modalMessage" class="text-gray-700 mb-6"></p>
+            <h3 id="modalTitle" class="text-xl font-bold mb-2" style="color: var(--text-primary);"></h3>
+            <p id="modalMessage" class="mb-6" style="color: var(--text-secondary);"></p>
             <div id="modalActions" class="flex justify-center space-x-4">
                 <button id="modalConfirmBtn" class="btn btn-primary hidden">Confirm</button>
                 <button id="modalCloseBtn" class="btn btn-ghost">Close</button>
@@ -1017,7 +938,7 @@
     <div id="editAccessKeyModal" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="window.closeEditAccessKeyModal()">&times;</span>
-            <h2 class="text-xl font-semibold text-gray-800 mb-6">Edit Access Key</h2>
+            <h2 class="text-xl font-semibold mb-6" style="color: var(--text-primary);">Edit Access Key</h2>
             <form id="editAccessKeyForm" class="space-y-4">
                 <input type="hidden" id="edit_key_original_name">
                 <div class="input-group">
@@ -1025,6 +946,14 @@
                     <div class="input-wrapper">
                         <i class="fas fa-fingerprint icon"></i>
                         <input type="text" id="edit_key_name" name="edit_key_name" required readonly
+                            class="w-full">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="edit_key_purpose"><i class="fas fa-lightbulb"></i> Key Purpose</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lightbulb icon"></i>
+                        <input type="text" id="edit_key_purpose" name="edit_key_purpose"
                             class="w-full">
                     </div>
                 </div>
@@ -1067,7 +996,7 @@
     <div id="editResellerModal" class="modal">
         <div class="modal-content">
             <span class="close-button" onclick="window.closeEditResellerModal()">&times;</span>
-            <h2 class="text-xl font-semibold text-gray-800 mb-6">Edit Reseller Account</h2>
+            <h2 class="text-xl font-semibold mb-6" style="color: var(--text-primary);">Edit Reseller Account</h2>
             <form id="editResellerForm" class="space-y-4">
                 <input type="hidden" id="edit_reseller_id">
                 <div class="input-group">
@@ -1167,6 +1096,27 @@
         const settingsRef = ref(db, 'settings');
         const historyRef = ref(db, 'history');
 
+        // --- Theme Toggle Logic ---
+        const htmlElement = document.documentElement;
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const themeToggleIcon = themeToggleBtn.querySelector('.fas');
+
+        // Set initial theme from localStorage or default to light
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        htmlElement.setAttribute('data-theme', currentTheme);
+        themeToggleIcon.classList.toggle('fa-sun', currentTheme === 'light');
+        themeToggleIcon.classList.toggle('fa-moon', currentTheme === 'dark');
+
+        themeToggleBtn.addEventListener('click', () => {
+            let newTheme = htmlElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            themeToggleIcon.classList.toggle('fa-sun', newTheme === 'light');
+            themeToggleIcon.classList.toggle('fa-moon', newTheme === 'dark');
+        });
+
+
         // --- Custom Modal Functions ---
         const customModal = document.getElementById('customModal');
         const modalIcon = document.getElementById('modalIcon');
@@ -1214,16 +1164,21 @@
                 modalCloseBtn.textContent = 'Close';
             }
             modalCloseBtn.onclick = window.closeCustomModal;
-            customModal.style.display = 'flex';
+            customModal.classList.add('show'); // Add show class for animation
+            customModal.style.display = 'flex'; // Make visible
         }
 
         /**
          * Closes the custom modal and resets its state.
          */
         window.closeCustomModal = function() { // Made global
-            customModal.style.display = 'none';
-            modalConfirmBtn.onclick = null;
-            modalCloseBtn.onclick = null;
+            customModal.classList.remove('show'); // Remove show class to trigger fade out
+            // Hide after transition
+            setTimeout(() => {
+                customModal.style.display = 'none';
+                modalConfirmBtn.onclick = null;
+                modalCloseBtn.onclick = null;
+            }, 300); // Match CSS transition duration
         }
 
         // Universal Confirmation/Action Wrapper
@@ -1312,6 +1267,7 @@
          */
         window.createKey = async function () {
             const key = document.getElementById('key').value.trim();
+            const purpose = document.getElementById('keyPurpose').value.trim() || null; // Get purpose
             const deviceId = document.getElementById('create_deviceId').value.trim() || null;
             const durationValue = parseInt(document.getElementById('durationValue').value);
             const durationUnit = document.getElementById('durationUnit').value;
@@ -1334,16 +1290,18 @@
                     expiry: expiry,
                     deviceId: deviceId,
                     active: true, // New keys are active by default
-                    createdAt: Date.now() // Timestamp for creation
+                    createdAt: Date.now(), // Timestamp for creation
+                    purpose: purpose // Save purpose
                 });
 
                 document.getElementById('key').value = "";
+                document.getElementById('keyPurpose').value = ""; // Clear purpose field
                 document.getElementById('create_deviceId').value = "";
                 document.getElementById('durationValue').value = "1";
                 document.getElementById('durationUnit').value = "days";
                 openCustomModal('success', 'Key Created', `Access key "${key}" created successfully!`);
                 renderAccessKeys();
-                await logAction('Access Key Created', { key: key, deviceId: deviceId, durationValue: durationValue, durationUnit: durationUnit, expiry: new Date(expiry).toISOString() });
+                await logAction('Access Key Created', { key: key, purpose: purpose, deviceId: deviceId, durationValue: durationValue, durationUnit: durationUnit, expiry: new Date(expiry).toISOString() });
             } catch (error) {
                 console.error("Error creating key:", error);
                 openCustomModal('error', 'Creation Failed', 'Failed to create key: ' + error.message);
@@ -1369,14 +1327,15 @@
                 container.innerHTML = '';
                 let total = 0;
                 if (!snapshot.exists() || Object.keys(snapshot.val()).length === 0) {
-                    container.innerHTML = '<div class="text-center text-gray-500 py-6 text-lg">No access keys found. Create one to get started!</div>';
+                    container.innerHTML = `<div class="text-center py-6 text-lg" style="color: var(--text-muted);">No access keys found. Create one to get started!</div>`;
                     keyCount.innerText = `TOTAL KEYS: 0`;
                     return;
                 }
                 snapshot.forEach(childSnapshot => {
                     const k = childSnapshot.key;
                     const data = childSnapshot.val();
-                    if (!k.toLowerCase().includes(query)) return;
+                    if (!k.toLowerCase().includes(query) && !(data.purpose && data.purpose.toLowerCase().includes(query)) && !(data.deviceId && data.deviceId.toLowerCase().includes(query))) return;
+
 
                     const now = Date.now();
                     const expired = data.expiry < now;
@@ -1395,26 +1354,27 @@
                     container.innerHTML += `
                         <div class="key-box">
                             <div class="flex-row">
-                                <b class="text-gray-800 text-lg">${k}</b> <!-- Changed to gray-800 -->
+                                <b class="text-lg" style="color: var(--text-primary);">${k}</b>
                                 <div class="flex space-x-3">
-                                    <button onclick="window.editAccessKey('${k}', '${data.deviceId || ''}')"
-                                        class="text-pink-500 hover:text-pink-700 transition-colors" title="Edit Key"> <!-- Changed to pink-500 -->
+                                    <button onclick="window.editAccessKey('${k}', '${data.purpose || ''}', '${data.deviceId || ''}')"
+                                        class="text-pink-500 hover:text-pink-700 transition-colors" title="Edit Key">
                                         <i class="fas fa-edit text-xl"></i>
                                     </button>
                                     <button onclick="window.confirmAction('confirm', '${isActive ? 'Deactivate' : 'Activate'} Key', 'Are you sure you want to ${isActive ? 'deactivate' : 'activate'} key \\'${k}\\'?', () => window.toggleAccessKeyStatus('${k}', ${isActive}))"
-                                        class="${isActive ? 'text-yellow-500 hover:text-yellow-700' : 'text-green-500 hover:text-green-700'} transition-colors" title="${isActive ? 'Deactivate' : 'Activate'} Key"> <!-- Adjusted colors -->
+                                        class="${isActive ? 'text-yellow-500 hover:text-yellow-700' : 'text-green-500 hover:text-green-700'} transition-colors" title="${isActive ? 'Deactivate' : 'Activate'} Key">
                                         <i class="fas ${toggleButtonIcon} text-xl"></i>
                                     </button>
                                     <button onclick="window.confirmAction('confirm', 'Delete Key', 'Are you sure you want to delete key \\'${k}\\'? This action cannot be undone.', () => window.deleteKey('${k}'))"
-                                        class="text-red-500 hover:text-red-700 transition-colors" title="Delete Key"> <!-- Adjusted colors -->
+                                        class="text-red-500 hover:text-red-700 transition-colors" title="Delete Key">
                                         <i class="fas fa-trash-alt text-xl"></i>
                                     </button>
                                 </div>
                             </div>
-                            <div class="text-gray-700 text-sm">STATUS: <span class="${statusClass}">${statusText}</span></div> <!-- Changed to gray-700 -->
-                            <div class="text-gray-700 text-sm">EXPIRES IN: <span class="${expired ? 'expired' : 'valid'}">${timeLeft}</span></div> <!-- Changed to gray-700 -->
-                            <div class="text-gray-700 text-sm">DEVICE: <span class="${deviceStatusClass}">${deviceIdText}</span></div> <!-- Changed to gray-700 -->
-                            <div class="text-gray-500 text-xs mt-1">Last updated: ${new Date(data.expiry).toLocaleString()}</div>
+                            <div class="text-sm" style="color: var(--text-secondary);">PURPOSE: <span style="color: var(--text-primary);">${data.purpose || 'N/A'}</span></div>
+                            <div class="text-sm" style="color: var(--text-secondary);">STATUS: <span class="${statusClass}">${statusText}</span></div>
+                            <div class="text-sm" style="color: var(--text-secondary);">EXPIRES IN: <span class="${expired ? 'expired' : 'valid'}">${timeLeft}</span></div>
+                            <div class="text-sm" style="color: var(--text-secondary);">DEVICE: <span class="${deviceStatusClass}">${deviceIdText}</span></div>
+                            <div class="text-xs mt-1" style="color: var(--text-muted);">Last updated: ${new Date(data.createdAt || data.expiry).toLocaleString()}</div>
                         </div>
                     `;
                 });
@@ -1446,6 +1406,7 @@
         const editAccessKeyForm = document.getElementById('editAccessKeyForm');
         const editKeyOriginalName = document.getElementById('edit_key_original_name');
         const editKeyName = document.getElementById('edit_key_name');
+        const editKeyPurpose = document.getElementById('edit_key_purpose'); // New field
         const editKeyDeviceId = document.getElementById('edit_key_deviceId');
         const editDurationValue = document.getElementById('edit_durationValue');
         const editDurationUnit = document.getElementById('edit_durationUnit');
@@ -1453,28 +1414,36 @@
         /**
          * Opens the edit access key modal and pre-fills its fields.
          * @param {string} keyName - The name of the key to edit.
+         * @param {string} purpose - The current purpose associated with the key.
          * @param {string} deviceId - The current device ID associated with the key.
          */
-        window.editAccessKey = function(keyName, deviceId) {
+        window.editAccessKey = function(keyName, purpose, deviceId) {
             editKeyOriginalName.value = keyName;
             editKeyName.value = keyName;
+            editKeyPurpose.value = purpose || ''; // Populate purpose
             editKeyDeviceId.value = deviceId || '';
             editDurationValue.value = 1; // Default to adding 1 unit
             editDurationUnit.value = 'days'; // Default to adding days
-            editAccessKeyModal.style.display = 'flex';
+            editAccessKeyModal.classList.add('show'); // Add show class for animation
+            editAccessKeyModal.style.display = 'flex'; // Make visible
         }
 
         /**
          * Closes the edit access key modal and resets the form.
          */
         window.closeEditAccessKeyModal = function() {
-            editAccessKeyModal.style.display = 'none';
-            editAccessKeyForm.reset();
+            editAccessKeyModal.classList.remove('show'); // Remove show class to trigger fade out
+            // Hide after transition
+            setTimeout(() => {
+                editAccessKeyModal.style.display = 'none';
+                editAccessKeyForm.reset();
+            }, 300); // Match CSS transition duration
         }
 
         editAccessKeyForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const originalKeyName = editKeyOriginalName.value;
+            const newPurpose = editKeyPurpose.value.trim() || null; // Get new purpose
             const newDeviceId = editKeyDeviceId.value.trim() || null;
             const newDurationValue = parseInt(editDurationValue.value);
             const newDurationUnit = editDurationUnit.value;
@@ -1494,6 +1463,7 @@
 
             try {
                 const updates = {
+                    purpose: newPurpose, // Update purpose
                     deviceId: newDeviceId,
                     expiry: newExpiry
                 };
@@ -1544,7 +1514,7 @@
             if (isMobile) {
                 // On mobile, sidebar is either fully open or fully closed (slides in/out)
                 sidebar.classList.toggle('active'); // Toggles transform: translateX(0) or (-100%)
-                body.classList.toggle('sidebar-open'); // Add/remove margin to main content
+                body.classList.toggle('body-sidebar-open-mobile'); // Add/remove margin to main content
                 // Toggle icon
                 const icon = sidebarToggle.querySelector('.fas');
                 if (sidebar.classList.contains('active')) { // If sidebar is now open
@@ -1556,13 +1526,13 @@
                 }
             } else {
                 // On desktop, toggle between full and compact (80px width)
-                sidebar.classList.toggle('active'); // Adds/removes 'active' to switch width
-                body.classList.toggle('sidebar-compact'); // Controls main-content margin-left for compact view
-                body.classList.toggle('sidebar-open', !sidebar.classList.contains('active')); // Controls main-content margin-left for full view
+                sidebar.classList.toggle('compact'); // Adds/removes 'compact' to switch width
+                body.classList.toggle('body-sidebar-compact', sidebar.classList.contains('compact')); // Controls main-content margin-left for compact view
+                body.classList.toggle('body-sidebar-full', !sidebar.classList.contains('compact')); // Controls main-content margin-left for full view
 
                 // Change icon based on compact state
                 const icon = sidebarToggle.querySelector('.fas');
-                if (sidebar.classList.contains('active')) { // If sidebar is now compact
+                if (sidebar.classList.contains('compact')) { // If sidebar is now compact
                     icon.classList.remove('fa-bars');
                     icon.classList.add('fa-arrow-right'); // Icon for expanding it back
                 } else { // If sidebar is now full
@@ -1587,21 +1557,20 @@
             // Only adjust if the breakpoint is crossed OR on initial load
             if (isMobile !== lastIsMobileState || !document.body.dataset.sidebarInitialized) {
                 if (isMobile) {
-                    // On mobile, sidebar starts hidden (if not already explicitly opened)
-                    // If it's already active (open), keep it open
-                    if (!sidebar.classList.contains('active')) {
-                        sidebar.classList.add('active'); // default to compact on desktop, hidden on mobile
-                    }
-                    body.classList.remove('sidebar-open'); // No margin left for main content
-                    body.classList.add('sidebar-compact'); // Indicates compact state on mobile (which means open in CSS, but conceptually compact for desktop transition)
+                    // On mobile, sidebar starts hidden
+                    sidebar.classList.remove('compact'); // Ensure not in desktop compact state
+                    sidebar.classList.remove('active'); // Start hidden
+                    body.classList.remove('body-sidebar-compact', 'body-sidebar-full');
+                    body.classList.add('body-sidebar-closed-mobile'); // Adjust main content for closed mobile
                     sidebarToggle.querySelector('.fas').classList.remove('fa-arrow-right', 'fa-times');
-                    sidebarToggle.querySelector('.fas').classList.add('fa-bars'); // Show bars to open/close
+                    sidebarToggle.querySelector('.fas').classList.add('fa-bars'); // Show bars to open
                     sidebarCloseBtn.style.display = 'block'; // 'x' to close
                 } else {
                     // On desktop, sidebar starts full (not compact)
-                    sidebar.classList.remove('active'); // Not compact
-                    body.classList.add('sidebar-open'); // Margin left for main content
-                    body.classList.remove('sidebar-compact'); // Not compact
+                    sidebar.classList.remove('compact'); // Not compact
+                    sidebar.classList.remove('active'); // Ensure mobile 'active' is off
+                    body.classList.remove('body-sidebar-compact', 'body-sidebar-closed-mobile');
+                    body.classList.add('body-sidebar-full'); // Adjust main content for full desktop sidebar
                     sidebarToggle.querySelector('.fas').classList.remove('fa-times', 'fa-arrow-right');
                     sidebarToggle.querySelector('.fas').classList.add('fa-bars'); // Show bars to compact
                     sidebarCloseBtn.style.display = 'block'; // 'x' to toggle desktop full/compact
@@ -1659,7 +1628,7 @@
             try {
                 const snapshot = await get(resellersRef);
                 if (!snapshot.exists() || Object.keys(snapshot.val()).length === 0) {
-                    resellerListContainer.innerHTML = '<div class="text-center text-gray-500 py-6 text-lg col-span-full">No reseller accounts found. Create one to manage.</div>';
+                    resellerListContainer.innerHTML = `<div class="text-center py-6 text-lg col-span-full" style="color: var(--text-muted);">No reseller accounts found. Create one to manage.</div>`;
                     return;
                 }
                 snapshot.forEach(childSnapshot => {
@@ -1674,10 +1643,10 @@
                     resellerListContainer.innerHTML += `
                         <div class="reseller-item-card">
                             <div class="reseller-info">
-                                <p><i class="fas fa-fingerprint"></i> ID: <span class="font-semibold text-gray-800">${resellerId}</span></p> <!-- Changed to gray-800 -->
-                                <p><i class="fas fa-user-circle"></i> Username: <span class="font-semibold text-gray-800">${data.username}</span></p> <!-- Changed to gray-800 -->
-                                <p><i class="fas fa-key"></i> Password: <span class="font-semibold text-gray-800">${data.password}</span></p> <!-- Changed to gray-800 -->
-                                <p><i class="fas fa-hdd"></i> Device ID: <span class="${data.deviceId ? 'text-blue-500' : 'text-gray-600'}">${data.deviceId || 'UNBOUND'}</span></p> <!-- Adjusted colors -->
+                                <p><i class="fas fa-fingerprint"></i> ID: <span class="font-semibold" style="color: var(--text-primary);">${resellerId}</span></p>
+                                <p><i class="fas fa-user-circle"></i> Username: <span class="font-semibold" style="color: var(--text-primary);">${data.username}</span></p>
+                                <p><i class="fas fa-key"></i> Password: <span class="font-semibold" style="color: var(--text-primary);">${data.password}</span></p>
+                                <p><i class="fas fa-hdd"></i> Device ID: <span class="${data.deviceId ? 'text-blue-500' : ''}" style="color: ${data.deviceId ? '' : 'var(--text-secondary)'};">${data.deviceId || 'UNBOUND'}</span></p>
                                 <p><i class="fas fa-calendar-times"></i> Expires: <span class="${expired ? 'expired' : 'valid'}">${expiryDateFormatted}</span></p>
                                 <p><i class="fas fa-info-circle"></i> Status: <span class="${statusClass}">${statusText}</span></p>
                             </div>
@@ -1819,7 +1788,8 @@
                 editResellerDurationValue.value = 1; // Default to adding 1 unit
                 editResellerDurationUnit.value = 'days'; // Default to adding days
 
-                editResellerModal.style.display = 'flex';
+                editResellerModal.classList.add('show'); // Add show class for animation
+                editResellerModal.style.display = 'flex'; // Make visible
             } catch (error) {
                 console.error("Error loading reseller for edit:", error);
                 openCustomModal('error', 'Edit Error', 'Failed to load reseller for editing: ' + error.message);
@@ -1830,8 +1800,12 @@
          * Closes the edit reseller modal and resets the form.
          */
         window.closeEditResellerModal = function() {
-            editResellerModal.style.display = 'none';
-            editResellerForm.reset();
+            editResellerModal.classList.remove('show'); // Remove show class to trigger fade out
+            // Hide after transition
+            setTimeout(() => {
+                editResellerModal.style.display = 'none';
+                editResellerForm.reset();
+            }, 300); // Match CSS transition duration
         };
 
         editResellerForm.addEventListener('submit', async (e) => {
@@ -1933,7 +1907,7 @@
             try {
                 const snapshot = await get(historyRef);
                 if (!snapshot.exists() || Object.keys(snapshot.val()).length === 0) {
-                    historyListContainer.innerHTML = '<div class="text-center text-gray-500 py-6 text-lg col-span-full">No history entries found.</div>';
+                    historyListContainer.innerHTML = `<div class="text-center py-6 text-lg col-span-full" style="color: var(--text-muted);">No history entries found.</div>`;
                     return;
                 }
                 const historyEntries = [];
@@ -1965,7 +1939,7 @@
                 });
 
                 if (!foundEntries) {
-                    historyListContainer.innerHTML = '<div class="text-center text-gray-500 py-6 text-lg col-span-full">No matching history entries found.</div>';
+                    historyListContainer.innerHTML = `<div class="text-center py-6 text-lg col-span-full" style="color: var(--text-muted);">No matching history entries found.</div>`;
                 }
 
             } catch (error) {
@@ -1973,6 +1947,120 @@
                 openCustomModal('error', 'History Error', 'Failed to load history: ' + error.message);
             }
         };
+
+        /**
+         * Summarizes the action history using the Gemini API (LLM).
+         */
+        window.summarizeHistoryWithLLM = async function() {
+            openCustomModal('info', 'Summarizing History ✨', 'Please wait while Gemini generates a summary of your action history...');
+            try {
+                const snapshot = await get(historyRef);
+                if (!snapshot.exists() || Object.keys(snapshot.val()).length === 0) {
+                    openCustomModal('info', 'No History to Summarize', 'There are no history entries to summarize.');
+                    return;
+                }
+
+                const historyEntries = [];
+                snapshot.forEach(childSnapshot => {
+                    historyEntries.push(childSnapshot.val());
+                });
+
+                // Sort history entries by timestamp in descending order (newest first)
+                historyEntries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+                // Limit to the latest 30 entries to manage token count for the LLM
+                const recentHistory = historyEntries.slice(0, 30);
+
+                let formattedHistory = "";
+                recentHistory.forEach(entry => {
+                    formattedHistory += `Timestamp: ${new Date(entry.timestamp).toLocaleString()}\n`;
+                    formattedHistory += `Action: ${entry.action}\n`;
+                    formattedHistory += `Details: ${JSON.stringify(entry.details)}\n\n`;
+                });
+
+                const prompt = `Summarize the following administrative actions concisely, highlighting key events and changes. Focus on the 'action' and relevant 'details'. Provide a brief overview of what has happened:\n\n${formattedHistory}`;
+
+                // Call the Gemini API
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // Canvas will automatically provide the API key
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const summaryText = result.candidates[0].content.parts[0].text;
+                    openCustomModal('success', 'History Summary ✨', `<h3>Overview of Recent Actions:</h3><p class="mt-4 text-left whitespace-pre-wrap">${summaryText}</p>`);
+                } else {
+                    openCustomModal('error', 'Summarization Failed', 'Could not generate a summary. The LLM response was empty or malformed.');
+                    console.error("LLM response structure unexpected:", result);
+                }
+                await logAction('History Summarized by LLM', { recentEntriesCount: recentHistory.length });
+
+            } catch (error) {
+                console.error("Error summarizing history with LLM:", error);
+                openCustomModal('error', 'Summarization Failed', 'Failed to summarize history: ' + error.message);
+            }
+        };
+
+        /**
+         * Suggests a purpose for an access key using the Gemini API (LLM).
+         */
+        window.suggestKeyPurposeWithLLM = async function() {
+            const keyName = document.getElementById('key').value.trim();
+            const keyPurposeInput = document.getElementById('keyPurpose');
+
+            openCustomModal('info', 'Suggesting Key Purpose ✨', 'Please wait while Gemini suggests a purpose...');
+            try {
+                let prompt = `Suggest a concise purpose or description for an access key.`;
+                if (keyName) {
+                    prompt = `Given the access key name '${keyName}', suggest a concise purpose or description for this key. If the key name is generic, suggest a general purpose for an access key in an AI admin panel. Keep it under 20 words.`;
+                } else {
+                    prompt = `Suggest a general, concise purpose or description for a new access key in an AI admin panel. Keep it under 20 words.`;
+                }
+
+                // Call the Gemini API
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // Canvas will automatically provide the API key
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const suggestedPurpose = result.candidates[0].content.parts[0].text;
+                    keyPurposeInput.value = suggestedPurpose.replace(/["']/g, ''); // Clean up quotes
+                    openCustomModal('success', 'Key Purpose Suggested ✨', 'A purpose has been suggested and filled in.');
+                } else {
+                    openCustomModal('error', 'Suggestion Failed', 'Could not generate a key purpose. The LLM response was empty or malformed.');
+                    console.error("LLM response structure unexpected:", result);
+                }
+                await logAction('Key Purpose Suggested by LLM', { keyName: keyName, suggested: keyPurposeInput.value });
+
+            } catch (error) {
+                console.error("Error suggesting key purpose with LLM:", error);
+                openCustomModal('error', 'Suggestion Failed', 'Failed to suggest key purpose: ' + error.message);
+            }
+        };
+
 
         // --- Advanced Tools Functions (New) ---
 
